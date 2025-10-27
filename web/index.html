@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>📅 Event Management System</h1>
+                <div class="header-actions">
+                    <div id="guestInfo" class="guest-info">
+                        <button onclick="showAuthSection()" class="btn-login">Login / Register</button>
+                    </div>
+                    <div id="userInfo" class="user-info" style="display: none;">
+                        <span id="userName"></span>
+                        <button onclick="showSettingsModal()" class="btn-settings">⚙️ Settings</button>
+                        <button onclick="logout()" class="btn-logout">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Login/Register Section -->
+        <div id="authSection" class="auth-section" style="display: none;">
+            <div class="auth-container">
+                <!-- Login Card -->
+                <div id="loginCard" class="login-card">
+                    <h2>Login</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Login</button>
+                    </form>
+                    <p class="auth-toggle">Don't have an account? <a href="#" onclick="showRegisterCard(); return false;">Register here</a></p>
+                    <div class="demo-credentials">
+                        <p><strong>Demo Credentials:</strong></p>
+                        <p>Admin: <code>admin</code> / <code>admin123</code></p>
+                        <p>Company: <code>company1</code> or <code>company2</code> / <code>company123</code></p>
+                        <p>User: <code>user</code>, <code>user2</code>, or <code>user3</code> / <code>user123</code></p>
+                    </div>
+                </div>
+
+                <!-- Register Card -->
+                <div id="registerCard" class="login-card" style="display: none;">
+                    <h2>Create Your Account</h2>
+                    <p class="card-subtitle">Join our community and start managing events</p>
+                    <form id="registerForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="regFullName">Full Name</label>
+                                <input type="text" id="regFullName" placeholder="John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="regUsername">Username</label>
+                                <input type="text" id="regUsername" placeholder="johndoe" required minlength="3">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="regEmail">Email Address</label>
+                                <input type="email" id="regEmail" placeholder="john@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="regAccountType">Account Type</label>
+                                <select id="regAccountType" required>
+                                    <option value="">Choose type...</option>
+                                    <option value="user">👤 Regular User</option>
+                                    <option value="organizer">🎯 Event Organizer</option>
+                                    <option value="company">🏢 Company (Needs Approval)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="regPassword">Password</label>
+                                <input type="password" id="regPassword" placeholder="Min. 6 characters" required minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label for="regConfirmPassword">Confirm Password</label>
+                                <input type="password" id="regConfirmPassword" placeholder="Re-enter password" required minlength="6">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group interests-section">
+                            <label class="interests-label">
+                                <span>Select Your Interests</span>
+                                <span class="required-badge">At least 2 required</span>
+                            </label>
+                            <div class="interests-grid">
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="IT">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">💻</span>
+                                        <span class="chip-text">IT</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="AI">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">🤖</span>
+                                        <span class="chip-text">AI</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Accounting">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">📊</span>
+                                        <span class="chip-text">Accounting</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Marketing">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">📱</span>
+                                        <span class="chip-text">Marketing</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Finance">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">💰</span>
+                                        <span class="chip-text">Finance</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Healthcare">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">🏥</span>
+                                        <span class="chip-text">Healthcare</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Education">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">📚</span>
+                                        <span class="chip-text">Education</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Engineering">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">⚙️</span>
+                                        <span class="chip-text">Engineering</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Sales">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">📈</span>
+                                        <span class="chip-text">Sales</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Human Resources">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">👥</span>
+                                        <span class="chip-text">HR</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Design">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">🎨</span>
+                                        <span class="chip-text">Design</span>
+                                    </span>
+                                </label>
+                                <label class="interest-chip">
+                                    <input type="checkbox" name="interests" value="Legal">
+                                    <span class="chip-content">
+                                        <span class="chip-icon">⚖️</span>
+                                        <span class="chip-text">Legal</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary btn-register">Create Account</button>
+                    </form>
+                    <p class="auth-toggle">Already have an account? <a href="#" onclick="showLoginCard(); return false;">Login here</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Section -->
+        <div id="mainContent">
+            <!-- Admin Controls -->
+            <div id="adminControls" style="display: none;" class="admin-controls">
+                <h2>Admin Panel</h2>
+                <div class="admin-buttons">
+                    <button onclick="showAddEventModal()" class="btn-primary">➕ Add New Event</button>
+                    <button onclick="showUserManagementModal()" class="btn-secondary">
+                        👥 Manage Users 
+                        <span id="pendingCompaniesCountBadge" class="badge">0</span>
+                    </button>
+                    <button onclick="showEventManagementModal()" class="btn-info">
+                        📅 Pending Events 
+                        <span id="pendingEventsCountBadge" class="badge">0</span>
+                    </button>
+                    <button onclick="showPostManagementModal()" class="btn-warning">
+                        📝 Pending Posts 
+                        <span id="pendingCountBadge" class="badge">0</span>
+                    </button>
+                    <button onclick="showProfileChangeRequestsModal()" class="btn-info">
+                        🔄 Profile Change Requests 
+                        <span id="pendingProfileChangesCountBadge" class="badge">0</span>
+                    </button>
+                    <button onclick="showDeletedComments()" class="btn-secondary">
+                        🗑️ Deleted Comments
+                    </button>
+                </div>
+            </div>
+
+            <!-- Company Controls -->
+            <div id="companyControls" style="display: none;" class="user-controls">
+                <button onclick="showAddEventModal()" class="btn-primary">➕ Create Event</button>
+                <button onclick="showAddPostModal()" class="btn-primary">✍️ Create Post</button>
+            </div>
+
+            <!-- Organizer Controls -->
+            <div id="organizerControls" style="display: none;" class="user-controls">
+                <button onclick="showAddEventModal()" class="btn-primary">➕ Create Event</button>
+                <button onclick="showAddPostModal()" class="btn-primary">✍️ Create Post</button>
+                <button onclick="showPostManagementModal()" class="btn-warning">
+                    📝 Manage Posts 
+                    <span id="organizerPendingCountBadge" class="badge">0</span>
+                </button>
+            </div>
+
+            <!-- User Controls -->
+            <div id="userControls" style="display: none;" class="user-controls">
+                <button onclick="showAddEventModal()" class="btn-primary">➕ Propose Event</button>
+                <button onclick="showAddPostModal()" class="btn-primary">✍️ Create Post</button>
+                <button onclick="showMessagingModal()" class="btn-primary">📨 Messages</button>
+                <button onclick="showMyRegistrations()" class="btn-secondary">📝 My Registrations</button>
+            </div>
+
+            <!-- Guest Controls -->
+            <div id="guestControls" class="guest-controls">
+                <div class="guest-message">
+                    <h3>👋 Welcome, Guest!</h3>
+                    <p>You're viewing in <strong>read-only mode</strong>. You can browse all events and posts.</p>
+                    <p>Want to create posts and interact? <a href="#" onclick="showAuthSection(); return false;">Login or Register</a> now!</p>
+                </div>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="search-filter-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search events and posts..." onkeyup="performSearch()">
+                </div>
+                <div class="filter-options">
+                    <select id="categoryFilter" onchange="applyFilters()">
+                        <option value="">All Categories</option>
+                        <option value="IT">IT</option>
+                        <option value="AI">AI</option>
+                        <option value="Accounting">Accounting</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Education">Education</option>
+                        <option value="Engineering">Engineering</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Human Resources">Human Resources</option>
+                        <option value="Design">Design</option>
+                        <option value="Legal">Legal</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="locationFilter" onchange="applyFilters()">
+                        <option value="">All Locations</option>
+                        <!-- Locations will be dynamically populated -->
+                    </select>
+                    <select id="typeFilter" onchange="applyFilters()">
+                        <option value="">Events & Posts</option>
+                        <option value="events">Events Only</option>
+                        <option value="posts">Posts Only</option>
+                    </select>
+                    <select id="sortFilter" onchange="applyFilters()">
+                        <option value="date">Sort by Date</option>
+                        <option value="popular">Most Popular</option>
+                        <option value="recommended">Recommended for You</option>
+                    </select>
+                    <button onclick="clearFilters()" class="btn-clear">Clear Filters</button>
+                </div>
+            </div>
+
+            <!-- Posts Section -->
+            <div class="events-section">
+                <h2>Community Posts</h2>
+                <div id="postsList" class="posts-list"></div>
+            </div>
+
+            <!-- Events Section -->
+            <div class="events-section">
+                <div class="section-header">
+                    <h2>Today's Events</h2>
+                    <div class="date-display" id="currentDate"></div>
+                </div>
+                <div id="eventsList" class="events-list"></div>
+            </div>
+
+            <!-- All Events Section -->
+            <div class="events-section">
+                <h2>All Upcoming Events</h2>
+                <div id="allEventsList" class="events-list"></div>
+            </div>
+        </div>
+
+        <!-- Event Detail Modal -->
+        <div id="eventModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEventModal()">&times;</span>
+                <div id="eventDetails"></div>
+            </div>
+        </div>
+
+        <!-- Post Detail Modal -->
+        <div id="postModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePostModal()">&times;</span>
+                <div id="postDetails"></div>
+            </div>
+        </div>
+
+        <!-- Add Event Modal (Admin Only) -->
+        <div id="addEventModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAddEventModal()">&times;</span>
+                <h2>Add New Event</h2>
+                <form id="addEventForm">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title</label>
+                        <input type="text" id="eventTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventTime">Time</label>
+                        <input type="time" id="eventTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventLocation">Location</label>
+                        <input type="text" id="eventLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDescription">Description</label>
+                        <textarea id="eventDescription" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventCategory">Category</label>
+                        <select id="eventCategory" required>
+                            <option value="IT">IT</option>
+                            <option value="AI">AI</option>
+                            <option value="Accounting">Accounting</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Education">Education</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Human Resources">Human Resources</option>
+                            <option value="Design">Design</option>
+                            <option value="Legal">Legal</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventMaxAttendees">Maximum Attendees</label>
+                        <input type="number" id="eventMaxAttendees" min="1" value="50" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Fields to Collect:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="visibleName" checked> Name</label>
+                            <label><input type="checkbox" id="visibleEmail" checked> Email</label>
+                            <label><input type="checkbox" id="visiblePhone"> Phone Number</label>
+                            <label><input type="checkbox" id="visibleCompany"> Company/Organization</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Privacy Settings:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="hideCapacity"> Hide capacity from other users</label>
+                        </div>
+                        <p class="form-hint">🔒 When enabled, only you and admins can see how many people registered</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Approval:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="autoApprove" checked> Automatically approve registrations</label>
+                        </div>
+                        <p class="form-hint">✓ When enabled, users will be automatically approved. When disabled, you must manually approve each registration.</p>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Event</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add Post Modal (User) -->
+        <div id="addPostModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAddPostModal()">&times;</span>
+                <h2>Create New Post</h2>
+                <p class="modal-info">Your post will be reviewed by an admin before being published.</p>
+                <form id="addPostForm">
+                    <div class="form-group">
+                        <label for="postTitle">Post Title</label>
+                        <input type="text" id="postTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="postContent">Content</label>
+                        <textarea id="postContent" rows="6" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="postCategory">Category</label>
+                        <select id="postCategory" required>
+                            <option value="IT">IT</option>
+                            <option value="AI">AI</option>
+                            <option value="Accounting">Accounting</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Education">Education</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Human Resources">Human Resources</option>
+                            <option value="Design">Design</option>
+                            <option value="Legal">Legal</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Submit Post</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- User Management Modal (Admin) -->
+        <div id="userManagementModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeUserManagementModal()">&times;</span>
+                <h2>User Management</h2>
+                <div id="usersList" class="users-list"></div>
+            </div>
+        </div>
+
+        <!-- Post Management Modal (Admin) -->
+        <div id="postManagementModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closePostManagementModal()">&times;</span>
+                <h2>Pending Posts Review</h2>
+                <div id="pendingPostsList" class="pending-posts-list"></div>
+            </div>
+        </div>
+
+        <!-- Event Management Modal (Admin) -->
+        <div id="eventManagementModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeEventManagementModal()">&times;</span>
+                <h2>Pending Events Review</h2>
+                <div id="pendingEventsList" class="pending-posts-list"></div>
+            </div>
+        </div>
+
+        <!-- Event Subscription Modal -->
+        <div id="subscriptionModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeSubscriptionModal()">&times;</span>
+                <h2>Register for Event</h2>
+                <h3 id="subscriptionEventTitle" style="color: #667eea; margin-bottom: 20px;"></h3>
+                <form id="subscriptionForm">
+                    <input type="hidden" id="subscriptionEventId">
+                    <div class="form-group" id="subNameGroup">
+                        <label for="subName">Full Name *</label>
+                        <input type="text" id="subName" required>
+                    </div>
+                    <div class="form-group" id="subEmailGroup">
+                        <label for="subEmail">Email *</label>
+                        <input type="email" id="subEmail" required>
+                    </div>
+                    <div class="form-group" id="subPhoneGroup" style="display: none;">
+                        <label for="subPhone">Phone Number</label>
+                        <input type="tel" id="subPhone">
+                    </div>
+                    <div class="form-group" id="subCompanyGroup" style="display: none;">
+                        <label for="subCompany">Company/Organization</label>
+                        <input type="text" id="subCompany">
+                    </div>
+                    <button type="submit" class="btn-primary">Complete Registration</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Subscribers List Modal -->
+        <div id="subscribersModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeSubscribersModal()">&times;</span>
+                <h2>Event Attendees</h2>
+                <h3 id="subscribersEventTitle" style="color: #667eea;"></h3>
+                <p id="subscribersCount" style="margin-bottom: 20px; font-weight: 600;"></p>
+                <div id="subscribersList" class="subscribers-list"></div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeSettingsModal()">&times;</span>
+                <h2>⚙️ Settings</h2>
+                
+                <div class="settings-tabs">
+                    <button class="settings-tab active" onclick="switchSettingsTab('profile')">Profile</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('account')">Account</button>
+                    <button class="settings-tab" onclick="switchSettingsTab('preferences')">Preferences</button>
+                </div>
+
+            <!-- Profile Settings -->
+            <div id="profileSettings" class="settings-section">
+                <h3>Profile Information</h3>
+                
+                <!-- Profile Photo Section -->
+                <div class="profile-photo-section">
+                    <div class="profile-photo-preview">
+                        <img id="profilePhotoPreview" src="" alt="Profile Photo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22 fill=%22white%22 font-family=%22Arial%22%3E👤%3C/text%3E%3C/svg%3E'">
+                    </div>
+                    <div class="profile-photo-actions">
+                        <label for="profilePhotoInput" class="btn-upload">
+                            📷 Upload Photo
+                            <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoChange(event)">
+                        </label>
+                        <button type="button" onclick="removeProfilePhoto()" class="btn-remove">Remove Photo</button>
+                    </div>
+                </div>
+
+                <form id="profileForm" onsubmit="updateProfile(event)">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="settingsUsername" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="settingsName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="settingsEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="settingsPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text" id="settingsCompany">
+                    </div>
+                    <div class="form-group">
+                        <label>My Interests (Select at least 2)</label>
+                        <div class="interests-checkbox-group" id="settingsInterests">
+                            <!-- Interests will be dynamically loaded -->
+                        </div>
+                    </div>
+                    <div id="companyRequestWarning" class="warning-message" style="display: none;">
+                        ⚠️ As a company user, your profile changes will be submitted for admin approval
+                    </div>
+                    <button type="submit" class="btn" id="saveProfileBtn">Save Changes</button>
+                </form>
+            </div>                <!-- Account Settings -->
+                <div id="accountSettings" class="settings-section" style="display: none;">
+                    <h3>Account Settings</h3>
+                    <form id="passwordForm" onsubmit="changePassword(event)">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" required minlength="6">
+                        </div>
+                        <button type="submit" class="btn">Change Password</button>
+                    </form>
+
+                    <div class="account-info">
+                        <h3>Account Information</h3>
+                        <p><strong>Username:</strong> <span id="accountUsername"></span></p>
+                        <p><strong>Account Type:</strong> <span id="accountRole"></span></p>
+                        <p><strong>Status:</strong> <span id="accountStatus"></span></p>
+                    </div>
+                </div>
+
+                <!-- Preferences Settings -->
+                <div id="preferencesSettings" class="settings-section" style="display: none;">
+                    <h3>Preferences</h3>
+                    <form id="preferencesForm" onsubmit="savePreferences(event)">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="emailNotifications">
+                                Receive email notifications
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="eventReminders">
+                                Event reminders
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="marketingEmails">
+                                Marketing emails
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Theme</label>
+                            <select id="themeSelect">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Language</label>
+                            <select id="languageSelect">
+                                <option value="en">English</option>
+                                <option value="ar">العربية</option>
+                                <option value="fr">Français</option>
+                                <option value="es">Español</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Save Preferences</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Change Requests Modal -->
+        <div id="profileChangeRequestsModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeProfileChangeRequestsModal()">&times;</span>
+                <h2>🔄 Profile Change Requests</h2>
+                <div id="profileChangeRequestsList"></div>
+            </div>
+        </div>
+
+        <!-- Company Profile Modal -->
+        <div id="companyProfileModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeCompanyProfileModal()">&times;</span>
+                <div id="companyProfileContent"></div>
+            </div>
+        </div>
+
+        <!-- Event Comments Modal -->
+        <div id="eventCommentsModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEventCommentsModal()">&times;</span>
+                <h2 id="eventCommentsTitle">Event Comments</h2>
+                <div id="eventCommentsList" class="comments-list"></div>
+                <div class="comment-form-section" id="commentFormSection">
+                    <h3>Add a Comment</h3>
+                    <form id="eventCommentForm" onsubmit="handleAddEventComment(event)">
+                        <input type="hidden" id="commentEventId">
+                        <textarea id="commentText" placeholder="Share your thoughts..." rows="3" required></textarea>
+                        <button type="submit" class="btn-primary">Post Comment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messaging Modal -->
+        <div id="messagingModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeMessagingModal()">&times;</span>
+                <h2>📨 Messages</h2>
+                <div class="messaging-container">
+                    <div class="conversations-list">
+                        <h3>Conversations</h3>
+                        <div id="conversationsList"></div>
+                    </div>
+                    <div class="message-thread">
+                        <div id="messageThreadHeader" class="message-thread-header"></div>
+                        <div id="messageThreadContent" class="message-thread-content"></div>
+                        <div id="messageForm" class="message-form">
+                            <form onsubmit="handleSendMessage(event)">
+                                <input type="hidden" id="messageRecipient">
+                                <textarea id="messageText" placeholder="Type your message..." rows="2" required></textarea>
+                                <button type="submit" class="btn-primary">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Conversation Modal -->
+        <div id="newConversationModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeNewConversationModal()">&times;</span>
+                <h2>New Message</h2>
+                <form id="newConversationForm" onsubmit="handleNewConversation(event)">
+                    <div class="form-group">
+                        <label>Select Company</label>
+                        <select id="newConversationRecipient" required>
+                            <option value="">Choose a company...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="newConversationMessage" placeholder="Type your message..." rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Deleted Comments Modal (Admin Only) -->
+        <div id="deletedCommentsModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeDeletedCommentsModal()">&times;</span>
+                <h2>🗑️ Deleted Comments</h2>
+                <div id="deletedCommentsContent"></div>
+            </div>
+        </div>
+
+        <!-- Edit Event Modal -->
+        <div id="editEventModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEditEventModal()">&times;</span>
+                <h2>✏️ Edit Event</h2>
+                <form id="editEventForm" onsubmit="handleEditEvent(event)">
+                    <input type="hidden" id="editEventId">
+                    <div class="form-group">
+                        <label>Event Title *</label>
+                        <input type="text" id="editEventTitle" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="editEventDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time *</label>
+                            <input type="time" id="editEventTime" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <input type="text" id="editEventLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="editEventCategory" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description *</label>
+                        <textarea id="editEventDescription" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Maximum Attendees *</label>
+                        <input type="number" id="editEventMaxAttendees" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Approval:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="editAutoApprove"> Automatically approve registrations</label>
+                        </div>
+                        <p class="form-hint">✓ When enabled, users will be automatically approved. When disabled, you must manually approve each registration.</p>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Post Modal -->
+        <div id="editPostModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEditPostModal()">&times;</span>
+                <h2>✏️ Edit Post</h2>
+                <form id="editPostForm" onsubmit="handleEditPost(event)">
+                    <input type="hidden" id="editPostId">
+                    <div class="form-group">
+                        <label>Title *</label>
+                        <input type="text" id="editPostTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select id="editPostCategory" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Content *</label>
+                        <textarea id="editPostContent" rows="6" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit History Modal (Admin Only) -->
+        <div id="editHistoryModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeEditHistoryModal()">&times;</span>
+                <h2>📜 Edit History</h2>
+                <div id="editHistoryContent"></div>
+            </div>
+        </div>
+
+        <!-- Event Registrations Modal (For Event Creators/Admin) -->
+        <div id="registrationsModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeRegistrationsModal()">&times;</span>
+                <h2>📋 Event Registrations</h2>
+                <div id="registrationsContent"></div>
+            </div>
+        </div>
+
+        <!-- My Registrations Modal (For Users) -->
+        <div id="myRegistrationsModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeMyRegistrationsModal()">&times;</span>
+                <h2>📝 My Event Registrations</h2>
+                <div id="myRegistrationsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
