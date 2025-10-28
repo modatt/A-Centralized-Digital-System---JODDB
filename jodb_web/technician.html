@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Technician Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+    <div class="dashboard">
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>Technician</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-section="my-work">My Work</a></li>
+                <li><a href="#" class="nav-link" data-section="assigned-docs">Assigned Documents</a></li>
+                <li><a href="#" class="nav-link logout">Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1 id="section-title">My Work</h1>
+                <div class="user-info">
+                    <span>Welcome, <strong id="current-user">Technician</strong></span>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- My Work Section -->
+                <section id="my-work-section" class="content-section active">
+                    <div class="section-header">
+                        <h2>My Assigned Documents</h2>
+                        <button class="btn btn-secondary btn-small" id="refresh-tech">Refresh</button>
+                    </div>
+
+                    <div id="tech-empty-state" class="empty-state" style="display:none;">No assigned documents yet.</div>
+
+                    <div class="table-container">
+                        <table id="tech-docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Order</th>
+                                    <th>Job Order ID</th>
+                                    <th>Device</th>
+                                    <th>Created</th>
+                                    <th>Operations</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tech-docs-tbody"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Assigned Documents Section (alias view) -->
+                <section id="assigned-docs-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Assigned Documents</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="simple-table">
+                            <thead>
+                                <tr>
+                                    <th>Job Order</th>
+                                    <th>Job Order ID</th>
+                                    <th>Device</th>
+                                    <th>Assigned</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assigned-summary-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for editing operations -->
+    <div id="op-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="op-modal-close">&times;</span>
+            <h2 id="op-modal-title">Update Operations</h2>
+            <div id="op-modal-body">
+                <!-- Technician header inputs -->
+                <div class="tech-header-form">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Day</label>
+                            <input type="text" id="tech-day" readonly />
+                        </div>
+                        <div class="form-col">
+                            <label>Date</label>
+                            <input type="date" id="tech-date" />
+                        </div>
+                        <div class="form-col">
+                            <label>Job Order</label>
+                            <input type="text" id="tech-job-order" readonly />
+                        </div>
+                        <div class="form-col">
+                            <label>Serial No</label>
+                            <input type="text" id="tech-serial-no" readonly />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Tech Name</label>
+                            <input type="text" id="tech-name" readonly />
+                        </div>
+                        <div class="form-col">
+                            <label>Tech ID</label>
+                            <input type="text" id="tech-id" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operations table with required fields -->
+                <div class="table-wrapper">
+                    <table class="operations-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Operation/Task</th>
+                                <th>Custom Operation</th>
+                                <th>Min Output</th>
+                                <th>Min Time (hrs)</th>
+                                <th>Actual Output</th>
+                                <th>Start / Current Time</th>
+                                <th>End / Actual Time</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tech-ops-tbody">
+                            <!-- Rows will be populated by technician.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" id="add-op-btn" type="button">Add Operation</button>
+                <button class="btn btn-primary" id="save-ops-btn">Save Updates</button>
+                <button class="btn btn-secondary" id="cancel-ops-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/sample-data.js"></script>
+    <script src="js/technician.js"></script>
+</body>
+</html>
