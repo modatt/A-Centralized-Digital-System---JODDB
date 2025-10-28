@@ -26,14 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function(e) {
             if (!this.classList.contains('logout')) {
                 e.preventDefault();
-                
+
                 // Remove active class from all links and sections
                 navLinks.forEach(l => l.classList.remove('active'));
                 sections.forEach(s => s.classList.remove('active'));
-                
+
                 // Add active class to clicked link
                 this.classList.add('active');
-                
+
                 // Show corresponding section
                 const sectionId = this.getAttribute('data-section') + '-section';
                 const section = document.getElementById(sectionId);
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     section.classList.add('active');
                     document.getElementById('section-title').textContent = this.textContent;
                 }
-                
+
                 // Load section data
                 if (sectionId === 'overview-section') {
                     loadOverview();
@@ -93,11 +93,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     userForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         const username = document.getElementById('user-username').value;
         const password = document.getElementById('user-password').value;
         const email = document.getElementById('user-email').value;
         const role = document.getElementById('user-role').value;
+        const team = (document.getElementById('user-team')?.value || '').trim();
 
         const users = JSON.parse(localStorage.getItem('users'));
         const submitBtn = this.querySelector('button[type="submit"]');
@@ -112,7 +113,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     username: username,
                     password: password,
                     email: email,
-                    role: role
+                    role: role,
+                    team: team
                 };
                 alert('User updated successfully!');
             }
@@ -124,13 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 password: password,
                 email: email,
                 role: role,
+                team: team,
                 createdDate: new Date().toISOString()
             };
             users.push(newUser);
-            
+
             // Track user creation history
             addSystemHistory('user_created', `New ${role} user "${username}" created`);
-            
+
             alert('User created successfully!');
         }
 
@@ -161,58 +164,60 @@ document.addEventListener('DOMContentLoaded', function() {
         delete submitBtn.dataset.editing;
         // Populate users checklist
         populateUsersChecklist();
-        // Reset operations to one input
-        operationsContainer.innerHTML = `
-            <div class="operation-item">
-                <div class="operation-row">
-                    <input type="text" class="operation-input" placeholder="Operation description" required>
-                    <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+        // Reset operations to one input (only if operations UI is present)
+        if (operationsContainer) {
+            operationsContainer.innerHTML = `
+                <div class="operation-item">
+                    <div class="operation-row">
+                        <input type="text" class="operation-input" placeholder="Operation description" required>
+                        <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                    </div>
+                    <div class="operation-details">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Minimum Output</label>
+                                <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01">
+                            </div>
+                            <div class="form-col">
+                                <label>Minimum Time (hours)</label>
+                                <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Actual Output</label>
+                                <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01">
+                            </div>
+                            <div class="form-col">
+                                <label>Actual Time (hours)</label>
+                                <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Operation Status</label>
+                                <select class="operation-status">
+                                    <option value="">Select Status</option>
+                                    <option value="true">Completed</option>
+                                    <option value="false">Not Completed</option>
+                                </select>
+                            </div>
+                            <div class="form-col">
+                                <label>number of operation</label>
+                                <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Notes</label>
+                                <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="operation-details">
-                    <div class="form-row">
-                        <div class="form-col">
-                            <label>Minimum Output</label>
-                            <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01">
-                        </div>
-                        <div class="form-col">
-                            <label>Minimum Time (hours)</label>
-                            <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col">
-                            <label>Actual Output</label>
-                            <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01">
-                        </div>
-                        <div class="form-col">
-                            <label>Actual Time (hours)</label>
-                            <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col">
-                            <label>Operation Status</label>
-                            <select class="operation-status">
-                                <option value="">Select Status</option>
-                                <option value="true">Completed</option>
-                                <option value="false">Not Completed</option>
-                            </select>
-                        </div>
-                        <div class="form-col">
-                            <label>number of operation</label>
-                            <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-col">
-                            <label>Notes</label>
-                            <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        attachOperationListeners();
+            `;
+            attachOperationListeners();
+        }
     });
 
     cancelDocumentBtn.addEventListener('click', function() {
@@ -224,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
         delete submitBtn.dataset.editing;
     });
 
-    addOperationBtn.addEventListener('click', function() {
+    if (addOperationBtn && operationsContainer) addOperationBtn.addEventListener('click', function() {
         const operationItem = document.createElement('div');
         operationItem.className = 'operation-item';
         operationItem.innerHTML = `
@@ -280,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function attachOperationListeners() {
+        if (!operationsContainer) return;
         const removeButtons = document.querySelectorAll('.remove-operation');
         removeButtons.forEach(btn => {
             btn.addEventListener('click', function() {
@@ -299,12 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const technicians = users.filter(user => user.role === 'technician');
         const usersChecklist = document.getElementById('users-checklist');
-        
+
         if (technicians.length === 0) {
             usersChecklist.innerHTML = '<div class="no-users-message">No technicians available. Please create technician users first.</div>';
             return;
         }
-        
+
         usersChecklist.innerHTML = technicians.map(user => `
             <div class="user-checkbox-item" data-user-id="${user.id}">
                 <input type="checkbox" class="user-checkbox" id="user-${user.id}" value="${user.id}">
@@ -314,12 +320,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `).join('');
-        
+
         // Add event listeners for checkboxes
         const checkboxItems = document.querySelectorAll('.user-checkbox-item');
         checkboxItems.forEach(item => {
             const checkbox = item.querySelector('.user-checkbox');
-            
+
             item.addEventListener('click', function(e) {
                 if (e.target !== checkbox) {
                     checkbox.checked = !checkbox.checked;
@@ -327,31 +333,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 item.classList.toggle('selected', checkbox.checked);
                 updateSelectedUsersCount();
             });
-            
+
             checkbox.addEventListener('change', function() {
                 item.classList.toggle('selected', this.checked);
                 updateSelectedUsersCount();
             });
         });
     }
-    
+
     function updateSelectedUsersCount() {
         const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
         document.getElementById('selected-users-count').textContent = selectedCheckboxes.length;
     }
-    
+
     function getSelectedUserIds() {
         const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
         return Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
     }
-    
+
     function setSelectedUsers(userIds) {
         // Clear all selections first
         document.querySelectorAll('.user-checkbox').forEach(cb => {
             cb.checked = false;
             cb.closest('.user-checkbox-item').classList.remove('selected');
         });
-        
+
         // Select specified users
         userIds.forEach(userId => {
             const checkbox = document.getElementById(`user-${userId}`);
@@ -360,20 +366,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkbox.closest('.user-checkbox-item').classList.add('selected');
             }
         });
-        
+
         updateSelectedUsersCount();
     }
-    
+
     // Select All Users functionality
     document.getElementById('select-all-users')?.addEventListener('click', function() {
         const checkboxes = document.querySelectorAll('.user-checkbox');
         const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        
+
         checkboxes.forEach(cb => {
             cb.checked = !allChecked;
             cb.closest('.user-checkbox-item').classList.toggle('selected', !allChecked);
         });
-        
+
         updateSelectedUsersCount();
         this.textContent = allChecked ? 'Select All Technicians' : 'Deselect All';
     });
@@ -382,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function addDocumentHistory(docId, action, details, oldValues = null) {
         const currentUser = localStorage.getItem('username') || 'System';
         const timestamp = new Date().toISOString();
-        
+
         const historyEntry = {
             id: Date.now(),
             timestamp: timestamp,
@@ -399,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         documentHistory[docId].unshift(historyEntry); // Add to beginning (newest first)
-        
+
         // Keep only last 50 entries per document
         if (documentHistory[docId].length > 50) {
             documentHistory[docId] = documentHistory[docId].slice(0, 50);
@@ -411,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateDocumentHistory(doc) {
         const documentHistory = JSON.parse(localStorage.getItem('documentHistory') || '{}');
         const history = documentHistory[doc.id] || [];
-        
+
         if (history.length === 0) {
             return `
                 <div class="history-item history-create">
@@ -441,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             const icon = actionIcons[entry.action] || '📋';
-            
+
             return `
                 <div class="history-item history-${entry.action}">
                     <div class="history-icon">${icon}</div>
@@ -461,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatHistoryAction(action) {
         const actionMap = {
             'created': 'Document Created',
-            'updated': 'Document Updated', 
+            'updated': 'Document Updated',
             'assigned': 'Technician Assigned',
             'unassigned': 'Technician Unassigned',
             'operation_added': 'Operation Added',
@@ -490,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check assignment changes
         const oldAssigned = oldDoc.assignedUsers || [];
         const newAssigned = newDoc.assignedUsers || [];
-        
+
         const addedUsers = newAssigned.filter(id => !oldAssigned.includes(id));
         const removedUsers = oldAssigned.filter(id => !newAssigned.includes(id));
 
@@ -533,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function addSystemHistory(action, details) {
         const currentUser = localStorage.getItem('username') || 'System';
         const timestamp = new Date().toISOString();
-        
+
         const historyEntry = {
             id: Date.now(),
             timestamp: timestamp,
@@ -556,16 +562,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     documentForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const serial = document.getElementById('doc-serial').value;
-        const title = document.getElementById('doc-title').value;
-        const description = document.getElementById('doc-description').value;
+        // Safely get fields (some may be absent in current form)
+        const serialEl = document.getElementById('doc-serial');
+        const titleEl = document.getElementById('doc-title');
+        const descriptionEl = document.getElementById('doc-description');
+        const serial = serialEl ? serialEl.value : '';
+        const title = titleEl ? titleEl.value : '';
+        const description = descriptionEl ? descriptionEl.value : '';
+
+        // New structured fields
+        const jobOrder = (document.getElementById('doc-job-order')?.value || '').trim();
+        const jobOrderId = (document.getElementById('doc-job-order-id')?.value || '').trim();
+        const device = (document.getElementById('doc-device')?.value || '').trim();
+        const deviceNo = (document.getElementById('doc-device-no')?.value || '').trim();
+        const deviceSerialNo = (document.getElementById('doc-device-serial')?.value || '').trim();
+        const assignedTeam = (document.getElementById('doc-assigned-team')?.value || '').trim();
+        const supervisor = (document.getElementById('doc-supervisor')?.value || '').trim();
         const assignedUserIds = getSelectedUserIds();
-        
+
         // Collect operations with all details
         const operationItems = document.querySelectorAll('.operation-item');
         const operations = [];
-        
+
         operationItems.forEach(item => {
             const description = item.querySelector('.operation-input').value.trim();
             if (description) {
@@ -576,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const status = item.querySelector('.operation-status').value;
                 const priority = parseInt(item.querySelector('.operation-priority').value) || null;
                 const notes = item.querySelector('.operation-notes').value.trim();
-                
+
                 operations.push({
                     description: description,
                     minOutput: minOutput,
@@ -601,27 +619,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 const oldDoc = { ...documents[docIndex] };
                 const newDoc = {
                     ...documents[docIndex],
-                    serial: serial,
-                    title: title,
+                    // Keep legacy fields for compatibility but derive from new inputs
+                    serial: jobOrderId || serial,
+                    title: jobOrder || device || title,
                     description: description,
+                    // New structured fields
+                    jobOrder,
+                    jobOrderId,
+                    device,
+                    deviceNo,
+                    deviceSerialNo,
+                    assignedTeam,
+                    supervisor,
                     operations: operations,
                     assignedUsers: assignedUserIds,
                     lastModified: new Date().toISOString()
                 };
-                
+
                 documents[docIndex] = newDoc;
-                
+
                 // Track history
                 const changes = detectDocumentChanges(oldDoc, newDoc);
                 if (changes.length > 0) {
                     addDocumentHistory(
-                        parseInt(editingId), 
-                        'updated', 
+                        parseInt(editingId),
+                        'updated',
                         changes.join('; '),
                         oldDoc
                     );
                 }
-                
+
                 alert('Document updated successfully!');
             }
         } else {
@@ -629,28 +656,37 @@ document.addEventListener('DOMContentLoaded', function() {
             const newDocumentId = Date.now();
             const newDocument = {
                 id: newDocumentId,
-                serial: serial,
-                title: title,
+                // Derive legacy fields from new inputs for compatibility
+                serial: jobOrderId || serial,
+                title: jobOrder || device || title,
                 description: description,
+                // New structured fields
+                jobOrder,
+                jobOrderId,
+                device,
+                deviceNo,
+                deviceSerialNo,
+                assignedTeam,
+                supervisor,
                 operations: operations,
                 assignedUsers: assignedUserIds,
                 createdDate: new Date().toISOString()
             };
             documents.push(newDocument);
-            
+
             // Track creation history
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             const assignedTechNames = assignedUserIds.map(id => {
                 const user = users.find(u => u.id === id);
                 return user ? user.username : 'Unknown';
             }).join(', ');
-            
+
             addDocumentHistory(
-                newDocumentId, 
-                'created', 
+                newDocumentId,
+                'created',
                 `Document created with ${operations.length} operation(s)${assignedUserIds.length > 0 ? `. Assigned to: ${assignedTechNames}` : ''}`
             );
-            
+
             alert('Document created successfully!');
         }
 
@@ -666,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Dashboard Analytics Functions
     let dashboardInterval;
-    
+
     function updateDashboardTime() {
         const now = new Date();
         document.getElementById('last-update-time').textContent = now.toLocaleTimeString();
@@ -675,11 +711,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateAnalytics() {
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-        
+
         // Basic counts
         const technicians = users.filter(u => u.role === 'technician').length;
         const supervisors = users.filter(u => u.role === 'supervisor').length;
-        
+
         // Operations analytics
         let totalOperations = 0;
         let completedOperations = 0;
@@ -687,20 +723,20 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalPlannedTime = 0;
         let totalEfficiency = 0;
         let efficiencyCount = 0;
-        
+
         documents.forEach(doc => {
             if (doc.operations && Array.isArray(doc.operations)) {
                 doc.operations.forEach(op => {
                     if (typeof op === 'object') {
                         totalOperations++;
-                        
+
                         if (op.status === true) {
                             completedOperations++;
                         }
-                        
+
                         if (op.actualTime) totalActualTime += parseFloat(op.actualTime);
                         if (op.minTime) totalPlannedTime += parseFloat(op.minTime);
-                        
+
                         // Calculate efficiency
                         if (op.actualTime && op.minTime && op.actualOutput && op.minOutput) {
                             const timeEff = (parseFloat(op.minTime) / parseFloat(op.actualTime)) * 100;
@@ -712,14 +748,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-        
+
         const successRate = totalOperations > 0 ? (completedOperations / totalOperations) * 100 : 0;
         const avgEfficiency = efficiencyCount > 0 ? totalEfficiency / efficiencyCount : 0;
         const timeUtilization = totalPlannedTime > 0 ? (totalActualTime / totalPlannedTime) * 100 : 0;
         const avgCompletionTime = completedOperations > 0 ? totalActualTime / completedOperations : 0;
         const pendingOperations = totalOperations - completedOperations;
         const overdueCount = Math.floor(pendingOperations * 0.3); // Mock overdue calculation
-        
+
         return {
             users: users.length,
             technicians,
@@ -739,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function generateSystemAlerts(analytics) {
         const alerts = [];
-        
+
         if (analytics.successRate < 70) {
             alerts.push({
                 type: 'warning',
@@ -748,7 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 time: 'Just now'
             });
         }
-        
+
         if (analytics.avgEfficiency < 75) {
             alerts.push({
                 type: 'warning',
@@ -757,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 time: '2 min ago'
             });
         }
-        
+
         if (analytics.overdueCount > 0) {
             alerts.push({
                 type: 'warning',
@@ -766,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 time: '5 min ago'
             });
         }
-        
+
         if (analytics.successRate >= 90) {
             alerts.push({
                 type: 'success',
@@ -775,7 +811,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 time: '10 min ago'
             });
         }
-        
+
         if (alerts.length === 0) {
             alerts.push({
                 type: 'info',
@@ -784,7 +820,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 time: 'Just now'
             });
         }
-        
+
         return alerts;
     }
 
@@ -795,7 +831,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { time: '--:--', text: `${analytics.activeProjects} projects currently active` },
             { time: '--:--', text: `System efficiency: ${analytics.avgEfficiency.toFixed(1)}%` }
         ];
-        
+
         const feedContainer = document.getElementById('activity-feed');
         feedContainer.innerHTML = activities.map(activity => `
             <div class="activity-item">
@@ -808,56 +844,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load functions
     function loadOverview() {
         const analytics = calculateAnalytics();
-        
+
         // Update KPI cards
         document.getElementById('total-users').textContent = analytics.users;
         document.getElementById('total-technicians').textContent = analytics.technicians;
         document.getElementById('total-supervisors').textContent = analytics.supervisors;
         document.getElementById('total-documents').textContent = analytics.documents;
-        
+
         // Update trends (mock data)
         document.getElementById('users-trend').textContent = '+2.5%';
         document.getElementById('tech-trend').textContent = '+1.2%';
         document.getElementById('super-trend').textContent = '0%';
         document.getElementById('docs-trend').textContent = '+5.1%';
-        
+
         // Update operations analytics
         document.getElementById('completed-ops').textContent = analytics.completedOperations;
         document.getElementById('pending-ops').textContent = analytics.pendingOperations;
         document.getElementById('success-rate').textContent = analytics.successRate.toFixed(1) + '%';
-        
+
         // Update progress bar
         const progressBar = document.getElementById('operations-progress');
         if (progressBar) {
             progressBar.style.width = analytics.successRate + '%';
         }
-        
+
         // Update performance metrics
         document.getElementById('avg-efficiency').textContent = analytics.avgEfficiency.toFixed(1) + '%';
         document.getElementById('time-utilization').textContent = Math.min(analytics.timeUtilization, 100).toFixed(1) + '%';
         document.getElementById('resource-usage').textContent = (Math.random() * 30 + 60).toFixed(1) + '%';
-        
+
         // Update performance gauge
         const gauge = document.getElementById('performance-gauge');
         if (gauge) {
             gauge.style.width = analytics.avgEfficiency + '%';
         }
-        
+
         // Update quick stats
         document.getElementById('total-operations').textContent = analytics.totalOperations;
         document.getElementById('avg-completion-time').textContent = analytics.avgCompletionTime.toFixed(1) + 'h';
         document.getElementById('overdue-count').textContent = analytics.overdueCount;
         document.getElementById('active-projects').textContent = analytics.activeProjects;
-        
+
         // Update system status
         updateSystemStatus(analytics);
-        
+
         // Update activity feed
         updateActivityFeed(analytics);
-        
+
         // Update alerts
         updateAlerts(analytics);
-        
+
         // Update timestamp
         updateDashboardTime();
     }
@@ -865,17 +901,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSystemStatus(analytics) {
         // Database status
         document.getElementById('database-status').textContent = '🟢';
-        
+
         // Operations status
         const opsStatus = analytics.successRate >= 80 ? '🟢' : analytics.successRate >= 60 ? '🟡' : '🔴';
         document.getElementById('operations-status').textContent = opsStatus;
         document.getElementById('operations-value').textContent = analytics.successRate >= 80 ? 'Optimal' : 'Degraded';
-        
+
         // Workflow status
         const workflowStatus = analytics.pendingOperations < 5 ? '🟢' : analytics.pendingOperations < 10 ? '🟡' : '🔴';
         document.getElementById('workflow-status').textContent = workflowStatus;
         document.getElementById('workflow-value').textContent = analytics.pendingOperations < 5 ? 'Smooth' : 'Busy';
-        
+
         // Performance status
         const perfStatus = analytics.avgEfficiency >= 85 ? '🟢' : analytics.avgEfficiency >= 70 ? '🟡' : '🔴';
         document.getElementById('performance-status').textContent = perfStatus;
@@ -885,7 +921,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateAlerts(analytics) {
         const alerts = generateSystemAlerts(analytics);
         const alertsContainer = document.getElementById('alerts-container');
-        
+
         alertsContainer.innerHTML = alerts.map(alert => `
             <div class="alert-item alert-${alert.type}">
                 <div class="alert-icon">${alert.icon}</div>
@@ -923,22 +959,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadUsers() {
         const users = JSON.parse(localStorage.getItem('users'));
         const tbody = document.getElementById('users-tbody');
-        
+
         if (users.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found. Create your first user!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No users found. Create your first user!</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = '';
         users.forEach(user => {
             const row = document.createElement('tr');
             const date = new Date(user.createdDate).toLocaleDateString();
             const roleClass = user.role === 'technician' ? 'badge-technician' : 'badge-supervisor';
-            
+
             row.innerHTML = `
                 <td>${user.username}</td>
                 <td>${user.email}</td>
                 <td><span class="badge ${roleClass}">${user.role}</span></td>
+                <td>${user.team || '-'}</td>
                 <td>${date}</td>
                 <td>
                     <button class="action-btn edit" onclick="editUser(${user.id})">Edit</button>
@@ -952,47 +989,44 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadDocuments() {
         const documents = JSON.parse(localStorage.getItem('documents'));
         const tbody = document.getElementById('documents-tbody');
-        
+
         if (documents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No documents found. Create your first document!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No documents found. Create your first document!</td></tr>';
             return;
         }
-        
+
         tbody.innerHTML = '';
         documents.forEach(doc => {
             const row = document.createElement('tr');
             const date = new Date(doc.createdDate).toLocaleDateString();
-            
-            // Count completed operations
+
             const completedOps = doc.operations.filter(op => op.status === true).length;
             const totalOps = doc.operations.length;
-            
+
             // Get assigned users
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             let assignedUsersHtml = '';
-            
+
             if (doc.assignedUsers && doc.assignedUsers.length > 0) {
                 const assignedUserNames = doc.assignedUsers.map(userId => {
                     const user = users.find(u => u.id === userId);
                     return user ? `<span class="assigned-user-tag ${user.role}">${user.username}</span>` : '';
                 }).filter(name => name !== '').join('');
-                
+
                 assignedUsersHtml = assignedUserNames || '<span class="no-assignment">Unassigned</span>';
             } else {
                 assignedUsersHtml = '<span class="no-assignment">Unassigned</span>';
             }
-            
+
             row.innerHTML = `
-                <td><strong>${doc.serial}</strong></td>
-                <td>${doc.title}</td>
-                <td>
-                    <span class="operations-count">${totalOps} total</span>
-                    <br>
-                    <span class="completed-count">${completedOps} completed</span>
-                </td>
-                <td class="assigned-users-cell">
-                    ${assignedUsersHtml}
-                </td>
+                <td>${doc.jobOrder || '-'}</td>
+                <td><strong>${doc.jobOrderId || '-'}</strong></td>
+                <td>${doc.device || '-'}</td>
+                <td>${doc.deviceNo || '-'}</td>
+                <td>${doc.deviceSerialNo || '-'}</td>
+                <td>${doc.assignedTeam || '-'}</td>
+                <td>${doc.supervisor || '-'}</td>
+                <td class="assigned-users-cell">${assignedUsersHtml}</td>
                 <td>${date}</td>
                 <td>
                     <button class="action-btn view" onclick="viewDocument(${doc.id})">View</button>
@@ -1008,14 +1042,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.editUser = function(userId) {
         const users = JSON.parse(localStorage.getItem('users'));
         const user = users.find(u => u.id === userId);
-        
+
         if (user) {
             // Populate form with existing data
             document.getElementById('user-username').value = user.username;
             document.getElementById('user-password').value = user.password;
             document.getElementById('user-email').value = user.email;
             document.getElementById('user-role').value = user.role;
-            
+            const teamSelect = document.getElementById('user-team');
+            if (teamSelect) teamSelect.value = user.team || '';
+
             // Show form and change button text
             userFormContainer.style.display = 'block';
             const submitBtn = userForm.querySelector('button[type="submit"]');
@@ -1037,88 +1073,109 @@ document.addEventListener('DOMContentLoaded', function() {
     window.editDocument = function(docId) {
         const documents = JSON.parse(localStorage.getItem('documents'));
         const doc = documents.find(d => d.id === docId);
-        
+
         if (doc) {
             // Populate form with existing data
-            document.getElementById('doc-serial').value = doc.serial;
-            document.getElementById('doc-title').value = doc.title;
-            document.getElementById('doc-description').value = doc.description || '';
-            
+            const serialInput = document.getElementById('doc-serial');
+            const titleInput = document.getElementById('doc-title');
+            const descInput = document.getElementById('doc-description');
+            if (serialInput) serialInput.value = doc.serial;
+            if (titleInput) titleInput.value = doc.title;
+            if (descInput) descInput.value = doc.description || '';
+
+            // Populate new structured fields
+            const joInput = document.getElementById('doc-job-order');
+            const joiInput = document.getElementById('doc-job-order-id');
+            const deviceInput = document.getElementById('doc-device');
+            const deviceNoInput = document.getElementById('doc-device-no');
+            const deviceSerialInput = document.getElementById('doc-device-serial');
+            const assignedTeamInput = document.getElementById('doc-assigned-team');
+            const supervisorInput = document.getElementById('doc-supervisor');
+            if (joInput) joInput.value = doc.jobOrder || '';
+            if (joiInput) joiInput.value = doc.jobOrderId || '';
+            if (deviceInput) deviceInput.value = doc.device || '';
+            if (deviceNoInput) deviceNoInput.value = doc.deviceNo || '';
+            if (deviceSerialInput) deviceSerialInput.value = doc.deviceSerialNo || '';
+            if (assignedTeamInput) assignedTeamInput.value = doc.assignedTeam || '';
+            if (supervisorInput) supervisorInput.value = doc.supervisor || '';
+
             // Populate operations
-            operationsContainer.innerHTML = '';
-            doc.operations.forEach(op => {
-                const operationItem = document.createElement('div');
-                operationItem.className = 'operation-item';
-                
-                // Handle both old string format and new object format
-                const description = typeof op === 'string' ? op : op.description;
-                const minOutput = typeof op === 'object' ? op.minOutput || '' : '';
-                const minTime = typeof op === 'object' ? op.minTime || '' : '';
-                const actualOutput = typeof op === 'object' ? op.actualOutput || '' : '';
-                const actualTime = typeof op === 'object' ? op.actualTime || '' : '';
-                const status = typeof op === 'object' ? op.status : '';
-                const priority = typeof op === 'object' ? op.priority || '' : '';
-                const notes = typeof op === 'object' ? op.notes || '' : '';
-                
-                operationItem.innerHTML = `
-                    <div class="operation-row">
-                        <input type="text" class="operation-input" placeholder="Operation description" required value="${description}">
-                        <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
-                    </div>
-                    <div class="operation-details">
-                        <div class="form-row">
-                            <div class="form-col">
-                                <label>Minimum Output</label>
-                                <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01" value="${minOutput}">
+            if (operationsContainer) {
+                operationsContainer.innerHTML = '';
+                doc.operations.forEach(op => {
+                    const operationItem = document.createElement('div');
+                    operationItem.className = 'operation-item';
+
+                    // Handle both old string format and new object format
+                    const description = typeof op === 'string' ? op : op.description;
+                    const minOutput = typeof op === 'object' ? op.minOutput || '' : '';
+                    const minTime = typeof op === 'object' ? op.minTime || '' : '';
+                    const actualOutput = typeof op === 'object' ? op.actualOutput || '' : '';
+                    const actualTime = typeof op === 'object' ? op.actualTime || '' : '';
+                    const status = typeof op === 'object' ? op.status : '';
+                    const priority = typeof op === 'object' ? op.priority || '' : '';
+                    const notes = typeof op === 'object' ? op.notes || '' : '';
+
+                    operationItem.innerHTML = `
+                        <div class="operation-row">
+                            <input type="text" class="operation-input" placeholder="Operation description" required value="${description}">
+                            <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                        </div>
+                        <div class="operation-details">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label>Minimum Output</label>
+                                    <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01" value="${minOutput}">
+                                </div>
+                                <div class="form-col">
+                                    <label>Minimum Time (hours)</label>
+                                    <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1" value="${minTime}">
+                                </div>
                             </div>
-                            <div class="form-col">
-                                <label>Minimum Time (hours)</label>
-                                <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1" value="${minTime}">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label>Actual Output</label>
+                                    <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01" value="${actualOutput}">
+                                </div>
+                                <div class="form-col">
+                                    <label>Actual Time (hours)</label>
+                                    <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1" value="${actualTime}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label>Operation Status</label>
+                                    <select class="operation-status">
+                                        <option value="">Select Status</option>
+                                        <option value="true" ${status === true ? 'selected' : ''}>Completed</option>
+                                        <option value="false" ${status === false ? 'selected' : ''}>Not Completed</option>
+                                    </select>
+                                </div>
+                                <div class="form-col">
+                                    <label>number of operation</label>
+                                    <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1" value="${priority}">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label>Notes</label>
+                                    <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3">${notes}</textarea>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-col">
-                                <label>Actual Output</label>
-                                <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01" value="${actualOutput}">
-                            </div>
-                            <div class="form-col">
-                                <label>Actual Time (hours)</label>
-                                <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1" value="${actualTime}">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-col">
-                                <label>Operation Status</label>
-                                <select class="operation-status">
-                                    <option value="">Select Status</option>
-                                    <option value="true" ${status === true ? 'selected' : ''}>Completed</option>
-                                    <option value="false" ${status === false ? 'selected' : ''}>Not Completed</option>
-                                </select>
-                            </div>
-                            <div class="form-col">
-                                <label>number of operation</label>
-                                <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1" value="${priority}">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-col">
-                                <label>Notes</label>
-                                <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3">${notes}</textarea>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                operationsContainer.appendChild(operationItem);
-            });
-            
-            attachOperationListeners();
-            
+                    `;
+                    operationsContainer.appendChild(operationItem);
+                });
+
+                attachOperationListeners();
+            }
+
             // Populate users checklist and set selected users
             populateUsersChecklist();
             if (doc.assignedUsers && Array.isArray(doc.assignedUsers)) {
                 setSelectedUsers(doc.assignedUsers);
             }
-            
+
             // Show form and change button text
             documentFormContainer.style.display = 'block';
             const submitBtn = documentForm.querySelector('button[type="submit"]');
@@ -1140,18 +1197,18 @@ document.addEventListener('DOMContentLoaded', function() {
     window.viewDocument = function(docId) {
         const documents = JSON.parse(localStorage.getItem('documents'));
         const doc = documents.find(d => d.id === docId);
-        
+
         if (doc) {
             const modal = document.getElementById('document-modal');
             const modalBody = document.getElementById('modal-body');
-            
+
             // Calculate time-related metrics
             let totalMinTime = 0;
             let totalActualTime = 0;
             let completedOperationsTime = 0;
             let completedOperationsCount = 0;
             let validOperations = 0;
-            
+
             doc.operations.forEach(op => {
                 if (typeof op === 'object') {
                     // Count all operations with time data
@@ -1162,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (op.actualTime) {
                         totalActualTime += parseFloat(op.actualTime) || 0;
                     }
-                    
+
                     // Count completed operations
                     if (op.status === true) {
                         completedOperationsCount++;
@@ -1172,18 +1229,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
-            
+
             // Calculate metrics with better logic
             const availableTime = totalMinTime; // Total planned time for all operations
             const actualOperatingTime = completedOperationsTime; // Time spent on completed operations
             const netTime = totalActualTime; // Total actual time spent on all operations
             const utilization = availableTime > 0 ? ((actualOperatingTime / availableTime) * 100) : 0;
             const idleTime = Math.max(0, netTime - actualOperatingTime);
-            
+
             // Additional calculated metrics
             const completionRate = doc.operations.length > 0 ? ((completedOperationsCount / doc.operations.length) * 100) : 0;
             const averageTimePerOperation = completedOperationsCount > 0 ? (actualOperatingTime / completedOperationsCount) : 0;
-            
+
             const operationsTable = doc.operations.map((op, index) => {
                 if (typeof op === 'string') {
                     // Legacy format support
@@ -1204,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // New format with detailed information
                     const statusText = op.status === true ? 'Completed' : op.status === false ? 'Not Completed' : 'Not Set';
                     const statusClass = op.status === true ? 'status-completed' : op.status === false ? 'status-incomplete' : 'status-unset';
-                    
+
                     return `
                         <tr>
                             <td>${index + 1}</td>
@@ -1220,36 +1277,52 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
             }).join('');
-            
+
             // Get assigned users information
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             let assignedUsersInfo = '';
-            
+
             if (doc.assignedUsers && doc.assignedUsers.length > 0) {
                 const assignedUserDetails = doc.assignedUsers.map(userId => {
                     const user = users.find(u => u.id === userId);
                     return user ? `<span class="assigned-user-tag ${user.role}">${user.username} (${user.role})</span>` : '';
                 }).filter(detail => detail !== '').join('');
-                
+
                 assignedUsersInfo = assignedUserDetails || '<span class="no-assignment">No users assigned</span>';
             } else {
                 assignedUsersInfo = '<span class="no-assignment">No users assigned</span>';
             }
-            
+
             modalBody.innerHTML = `
                 <div class="document-info">
                     <div class="info-grid">
                         <div class="info-item">
-                            <strong>Serial Number:</strong>
-                            <span>${doc.serial}</span>
+                            <strong>Job Order:</strong>
+                            <span>${doc.jobOrder || '-'}</span>
                         </div>
                         <div class="info-item">
-                            <strong>Title:</strong>
-                            <span>${doc.title}</span>
+                            <strong>Job Order ID:</strong>
+                            <span>${doc.jobOrderId || '-'}</span>
                         </div>
                         <div class="info-item">
-                            <strong>Description:</strong>
-                            <span>${doc.description || 'No description provided'}</span>
+                            <strong>Device:</strong>
+                            <span>${doc.device || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Device No:</strong>
+                            <span>${doc.deviceNo || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Device Serial No:</strong>
+                            <span>${doc.deviceSerialNo || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Assigned Team:</strong>
+                            <span>${doc.assignedTeam || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Supervisor:</strong>
+                            <span>${doc.supervisor || '-'}</span>
                         </div>
                         <div class="info-item">
                             <strong>Created Date:</strong>
@@ -1338,7 +1411,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-            
+
             modal.style.display = 'block';
         }
     };
@@ -1346,11 +1419,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modal close handling
     const modal = document.getElementById('document-modal');
     const closeBtn = document.querySelector('.close');
-    
+
     closeBtn.addEventListener('click', function() {
         modal.style.display = 'none';
     });
-    
+
     window.addEventListener('click', function(e) {
         if (e.target === modal) {
             modal.style.display = 'none';
