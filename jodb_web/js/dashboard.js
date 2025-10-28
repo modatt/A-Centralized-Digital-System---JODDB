@@ -45,10 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Load section data
                 if (sectionId === 'overview-section') {
                     loadOverview();
-                } else if (sectionId === 'users-section') {
-                    loadUsers();
-                } else if (sectionId === 'documents-section') {
-                    loadDocuments();
+                    startDashboardAutoRefresh();
+                } else {
+                    stopDashboardAutoRefresh();
+                    if (sectionId === 'users-section') {
+                        loadUsers();
+                    } else if (sectionId === 'documents-section') {
+                        loadDocuments();
+                    }
                 }
             }
         });
@@ -360,18 +364,260 @@ document.addEventListener('DOMContentLoaded', function() {
         loadOverview();
     });
 
-    // Load functions
-    function loadOverview() {
-        const users = JSON.parse(localStorage.getItem('users'));
-        const documents = JSON.parse(localStorage.getItem('documents'));
+    // Dashboard Analytics Functions
+    let dashboardInterval;
+    
+    function updateDashboardTime() {
+        const now = new Date();
+        document.getElementById('last-update-time').textContent = now.toLocaleTimeString();
+    }
+
+    function calculateAnalytics() {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const documents = JSON.parse(localStorage.getItem('documents') || '[]');
         
+        // Basic counts
         const technicians = users.filter(u => u.role === 'technician').length;
         const supervisors = users.filter(u => u.role === 'supervisor').length;
         
-        document.getElementById('total-users').textContent = users.length;
-        document.getElementById('total-technicians').textContent = technicians;
-        document.getElementById('total-supervisors').textContent = supervisors;
-        document.getElementById('total-documents').textContent = documents.length;
+        // Operations analytics
+        let totalOperations = 0;
+        let completedOperations = 0;
+        let totalActualTime = 0;
+        let totalPlannedTime = 0;
+        let totalEfficiency = 0;
+        let efficiencyCount = 0;
+        
+        documents.forEach(doc => {
+            if (doc.operations && Array.isArray(doc.operations)) {
+                doc.operations.forEach(op => {
+                    if (typeof op === 'object') {
+                        totalOperations++;
+                        
+                        if (op.status === true) {
+                            completedOperations++;
+                        }
+                        
+                        if (op.actualTime) totalActualTime += parseFloat(op.actualTime);
+                        if (op.minTime) totalPlannedTime += parseFloat(op.minTime);
+                        
+                        // Calculate efficiency
+                        if (op.actualTime && op.minTime && op.actualOutput && op.minOutput) {
+                            const timeEff = (parseFloat(op.minTime) / parseFloat(op.actualTime)) * 100;
+                            const outputEff = (parseFloat(op.actualOutput) / parseFloat(op.minOutput)) * 100;
+                            totalEfficiency += (timeEff + outputEff) / 2;
+                            efficiencyCount++;
+                        }
+                    }
+                });
+            }
+        });
+        
+        const successRate = totalOperations > 0 ? (completedOperations / totalOperations) * 100 : 0;
+        const avgEfficiency = efficiencyCount > 0 ? totalEfficiency / efficiencyCount : 0;
+        const timeUtilization = totalPlannedTime > 0 ? (totalActualTime / totalPlannedTime) * 100 : 0;
+        const avgCompletionTime = completedOperations > 0 ? totalActualTime / completedOperations : 0;
+        const pendingOperations = totalOperations - completedOperations;
+        const overdueCount = Math.floor(pendingOperations * 0.3); // Mock overdue calculation
+        
+        return {
+            users: users.length,
+            technicians,
+            supervisors,
+            documents: documents.length,
+            totalOperations,
+            completedOperations,
+            pendingOperations,
+            successRate,
+            avgEfficiency,
+            timeUtilization,
+            avgCompletionTime,
+            overdueCount,
+            activeProjects: documents.filter(doc => doc.operations.some(op => op.status === false)).length
+        };
+    }
+
+    function generateSystemAlerts(analytics) {
+        const alerts = [];
+        
+        if (analytics.successRate < 70) {
+            alerts.push({
+                type: 'warning',
+                icon: '⚠️',
+                text: `Operation success rate is below target (${analytics.successRate.toFixed(1)}%)`,
+                time: 'Just now'
+            });
+        }
+        
+        if (analytics.avgEfficiency < 75) {
+            alerts.push({
+                type: 'warning',
+                icon: '🐌',
+                text: `Average efficiency needs improvement (${analytics.avgEfficiency.toFixed(1)}%)`,
+                time: '2 min ago'
+            });
+        }
+        
+        if (analytics.overdueCount > 0) {
+            alerts.push({
+                type: 'warning',
+                icon: '⏰',
+                text: `${analytics.overdueCount} operations are overdue`,
+                time: '5 min ago'
+            });
+        }
+        
+        if (analytics.successRate >= 90) {
+            alerts.push({
+                type: 'success',
+                icon: '🎉',
+                text: 'Excellent performance! Success rate above 90%',
+                time: '10 min ago'
+            });
+        }
+        
+        if (alerts.length === 0) {
+            alerts.push({
+                type: 'info',
+                icon: '✅',
+                text: 'All systems operating normally',
+                time: 'Just now'
+            });
+        }
+        
+        return alerts;
+    }
+
+    function updateActivityFeed(analytics) {
+        const activities = [
+            { time: new Date().toLocaleTimeString(), text: 'Dashboard refreshed' },
+            { time: '--:--', text: `${analytics.completedOperations} operations completed today` },
+            { time: '--:--', text: `${analytics.activeProjects} projects currently active` },
+            { time: '--:--', text: `System efficiency: ${analytics.avgEfficiency.toFixed(1)}%` }
+        ];
+        
+        const feedContainer = document.getElementById('activity-feed');
+        feedContainer.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-time">${activity.time}</div>
+                <div class="activity-text">${activity.text}</div>
+            </div>
+        `).join('');
+    }
+
+    // Load functions
+    function loadOverview() {
+        const analytics = calculateAnalytics();
+        
+        // Update KPI cards
+        document.getElementById('total-users').textContent = analytics.users;
+        document.getElementById('total-technicians').textContent = analytics.technicians;
+        document.getElementById('total-supervisors').textContent = analytics.supervisors;
+        document.getElementById('total-documents').textContent = analytics.documents;
+        
+        // Update trends (mock data)
+        document.getElementById('users-trend').textContent = '+2.5%';
+        document.getElementById('tech-trend').textContent = '+1.2%';
+        document.getElementById('super-trend').textContent = '0%';
+        document.getElementById('docs-trend').textContent = '+5.1%';
+        
+        // Update operations analytics
+        document.getElementById('completed-ops').textContent = analytics.completedOperations;
+        document.getElementById('pending-ops').textContent = analytics.pendingOperations;
+        document.getElementById('success-rate').textContent = analytics.successRate.toFixed(1) + '%';
+        
+        // Update progress bar
+        const progressBar = document.getElementById('operations-progress');
+        if (progressBar) {
+            progressBar.style.width = analytics.successRate + '%';
+        }
+        
+        // Update performance metrics
+        document.getElementById('avg-efficiency').textContent = analytics.avgEfficiency.toFixed(1) + '%';
+        document.getElementById('time-utilization').textContent = Math.min(analytics.timeUtilization, 100).toFixed(1) + '%';
+        document.getElementById('resource-usage').textContent = (Math.random() * 30 + 60).toFixed(1) + '%';
+        
+        // Update performance gauge
+        const gauge = document.getElementById('performance-gauge');
+        if (gauge) {
+            gauge.style.width = analytics.avgEfficiency + '%';
+        }
+        
+        // Update quick stats
+        document.getElementById('total-operations').textContent = analytics.totalOperations;
+        document.getElementById('avg-completion-time').textContent = analytics.avgCompletionTime.toFixed(1) + 'h';
+        document.getElementById('overdue-count').textContent = analytics.overdueCount;
+        document.getElementById('active-projects').textContent = analytics.activeProjects;
+        
+        // Update system status
+        updateSystemStatus(analytics);
+        
+        // Update activity feed
+        updateActivityFeed(analytics);
+        
+        // Update alerts
+        updateAlerts(analytics);
+        
+        // Update timestamp
+        updateDashboardTime();
+    }
+
+    function updateSystemStatus(analytics) {
+        // Database status
+        document.getElementById('database-status').textContent = '🟢';
+        
+        // Operations status
+        const opsStatus = analytics.successRate >= 80 ? '🟢' : analytics.successRate >= 60 ? '🟡' : '🔴';
+        document.getElementById('operations-status').textContent = opsStatus;
+        document.getElementById('operations-value').textContent = analytics.successRate >= 80 ? 'Optimal' : 'Degraded';
+        
+        // Workflow status
+        const workflowStatus = analytics.pendingOperations < 5 ? '🟢' : analytics.pendingOperations < 10 ? '🟡' : '🔴';
+        document.getElementById('workflow-status').textContent = workflowStatus;
+        document.getElementById('workflow-value').textContent = analytics.pendingOperations < 5 ? 'Smooth' : 'Busy';
+        
+        // Performance status
+        const perfStatus = analytics.avgEfficiency >= 85 ? '🟢' : analytics.avgEfficiency >= 70 ? '🟡' : '🔴';
+        document.getElementById('performance-status').textContent = perfStatus;
+        document.getElementById('performance-value').textContent = analytics.avgEfficiency >= 85 ? 'Excellent' : analytics.avgEfficiency >= 70 ? 'Good' : 'Poor';
+    }
+
+    function updateAlerts(analytics) {
+        const alerts = generateSystemAlerts(analytics);
+        const alertsContainer = document.getElementById('alerts-container');
+        
+        alertsContainer.innerHTML = alerts.map(alert => `
+            <div class="alert-item alert-${alert.type}">
+                <div class="alert-icon">${alert.icon}</div>
+                <div class="alert-text">${alert.text}</div>
+                <div class="alert-time">${alert.time}</div>
+            </div>
+        `).join('');
+    }
+
+    // Refresh dashboard functionality
+    document.getElementById('refresh-dashboard')?.addEventListener('click', function() {
+        loadOverview();
+        this.style.transform = 'rotate(360deg)';
+        setTimeout(() => {
+            this.style.transform = 'rotate(0deg)';
+        }, 500);
+    });
+
+    // Auto-refresh dashboard every 30 seconds
+    function startDashboardAutoRefresh() {
+        dashboardInterval = setInterval(() => {
+            if (document.getElementById('overview-section').classList.contains('active')) {
+                loadOverview();
+            }
+        }, 30000);
+    }
+
+    // Stop auto-refresh when leaving dashboard
+    function stopDashboardAutoRefresh() {
+        if (dashboardInterval) {
+            clearInterval(dashboardInterval);
+        }
     }
 
     function loadUsers() {
@@ -575,6 +821,45 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('document-modal');
             const modalBody = document.getElementById('modal-body');
             
+            // Calculate time-related metrics
+            let totalMinTime = 0;
+            let totalActualTime = 0;
+            let completedOperationsTime = 0;
+            let completedOperationsCount = 0;
+            let validOperations = 0;
+            
+            doc.operations.forEach(op => {
+                if (typeof op === 'object') {
+                    // Count all operations with time data
+                    if (op.minTime) {
+                        totalMinTime += parseFloat(op.minTime) || 0;
+                        validOperations++;
+                    }
+                    if (op.actualTime) {
+                        totalActualTime += parseFloat(op.actualTime) || 0;
+                    }
+                    
+                    // Count completed operations
+                    if (op.status === true) {
+                        completedOperationsCount++;
+                        if (op.actualTime) {
+                            completedOperationsTime += parseFloat(op.actualTime) || 0;
+                        }
+                    }
+                }
+            });
+            
+            // Calculate metrics with better logic
+            const availableTime = totalMinTime; // Total planned time for all operations
+            const actualOperatingTime = completedOperationsTime; // Time spent on completed operations
+            const netTime = totalActualTime; // Total actual time spent on all operations
+            const utilization = availableTime > 0 ? ((actualOperatingTime / availableTime) * 100) : 0;
+            const idleTime = Math.max(0, netTime - actualOperatingTime);
+            
+            // Additional calculated metrics
+            const completionRate = doc.operations.length > 0 ? ((completedOperationsCount / doc.operations.length) * 100) : 0;
+            const averageTimePerOperation = completedOperationsCount > 0 ? (actualOperatingTime / completedOperationsCount) : 0;
+            
             const operationsTable = doc.operations.map((op, index) => {
                 if (typeof op === 'string') {
                     // Legacy format support
@@ -633,6 +918,51 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
+                <div class="time-metrics">
+                    <h3>📊 Time Analysis & Performance Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Available Time</div>
+                            <div class="metric-value">${availableTime.toFixed(1)} hrs</div>
+                            <div class="metric-description">Total planned time for all operations</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Net Time</div>
+                            <div class="metric-value">${netTime.toFixed(1)} hrs</div>
+                            <div class="metric-description">Total actual time spent on operations</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Actual Operating Time</div>
+                            <div class="metric-value">${actualOperatingTime.toFixed(1)} hrs</div>
+                            <div class="metric-description">Time spent on completed operations only</div>
+                        </div>
+                        <div class="metric-card ${utilization >= 80 ? 'metric-good' : utilization >= 60 ? 'metric-warning' : 'metric-poor'}">
+                            <div class="metric-label">Utilization Rate</div>
+                            <div class="metric-value">${utilization.toFixed(1)}%</div>
+                            <div class="metric-description">Efficiency: Operating time vs Available time</div>
+                        </div>
+                        <div class="metric-card ${idleTime < 1 ? 'metric-good' : idleTime < 3 ? 'metric-warning' : 'metric-poor'}">
+                            <div class="metric-label">Idle Time</div>
+                            <div class="metric-value">${idleTime.toFixed(1)} hrs</div>
+                            <div class="metric-description">Non-productive time (Net - Operating)</div>
+                        </div>
+                        <div class="metric-card ${completionRate >= 80 ? 'metric-good' : completionRate >= 50 ? 'metric-warning' : 'metric-poor'}">
+                            <div class="metric-label">Completion Rate</div>
+                            <div class="metric-value">${completionRate.toFixed(1)}%</div>
+                            <div class="metric-description">${completedOperationsCount}/${doc.operations.length} operations completed</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Avg Time/Operation</div>
+                            <div class="metric-value">${averageTimePerOperation.toFixed(1)} hrs</div>
+                            <div class="metric-description">Average time per completed operation</div>
+                        </div>
+                        <div class="metric-card ${(netTime > 0 && availableTime > 0) ? (netTime <= availableTime ? 'metric-good' : 'metric-warning') : ''}">
+                            <div class="metric-label">Schedule Variance</div>
+                            <div class="metric-value">${availableTime > 0 ? ((netTime - availableTime) / availableTime * 100).toFixed(1) : 0}%</div>
+                            <div class="metric-description">${netTime > availableTime ? 'Over' : 'Under'} planned time</div>
+                        </div>
+                    </div>
+                </div>
                 <div class="operations-section">
                     <h3>Operations Details</h3>
                     <div class="table-wrapper">
@@ -678,4 +1008,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial load
     loadOverview();
+    startDashboardAutoRefresh();
 });

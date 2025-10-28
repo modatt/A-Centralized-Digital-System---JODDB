@@ -31,22 +31,184 @@
             <div class="content-area">
                 <!-- Overview Section -->
                 <section id="overview-section" class="content-section active">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <h3>Total Users</h3>
-                            <p class="stat-number" id="total-users">0</p>
+                    <!-- Real-time Status Dashboard -->
+                    <div class="dashboard-header">
+                        <h2>📊 System Overview & Analytics</h2>
+                        <div class="dashboard-controls">
+                            <button class="btn btn-secondary btn-small" id="refresh-dashboard">🔄 Refresh</button>
+                            <span class="last-update">Last updated: <span id="last-update-time">--</span></span>
                         </div>
-                        <div class="stat-card">
-                            <h3>Technicians</h3>
-                            <p class="stat-number" id="total-technicians">0</p>
+                    </div>
+
+                    <!-- Key Performance Indicators -->
+                    <div class="kpi-section">
+                        <div class="kpi-grid">
+                            <div class="kpi-card kpi-primary">
+                                <div class="kpi-icon">👥</div>
+                                <div class="kpi-content">
+                                    <h4>Total Users</h4>
+                                    <span class="kpi-number" id="total-users">0</span>
+                                    <span class="kpi-trend" id="users-trend">+0%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-card kpi-success">
+                                <div class="kpi-icon">🔧</div>
+                                <div class="kpi-content">
+                                    <h4>Active Technicians</h4>
+                                    <span class="kpi-number" id="total-technicians">0</span>
+                                    <span class="kpi-trend" id="tech-trend">+0%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-card kpi-warning">
+                                <div class="kpi-icon">👔</div>
+                                <div class="kpi-content">
+                                    <h4>Supervisors</h4>
+                                    <span class="kpi-number" id="total-supervisors">0</span>
+                                    <span class="kpi-trend" id="super-trend">+0%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-card kpi-info">
+                                <div class="kpi-icon">📄</div>
+                                <div class="kpi-content">
+                                    <h4>Documents</h4>
+                                    <span class="kpi-number" id="total-documents">0</span>
+                                    <span class="kpi-trend" id="docs-trend">+0%</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <h3>Supervisors</h3>
-                            <p class="stat-number" id="total-supervisors">0</p>
+                    </div>
+
+                    <!-- System Status Monitor -->
+                    <div class="status-section">
+                        <h3>🚥 System Status</h3>
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <div class="status-indicator" id="database-status">🟢</div>
+                                <div class="status-label">Database</div>
+                                <div class="status-value">Online</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-indicator" id="operations-status">🟢</div>
+                                <div class="status-label">Operations</div>
+                                <div class="status-value" id="operations-value">Running</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-indicator" id="workflow-status">🟡</div>
+                                <div class="status-label">Workflow</div>
+                                <div class="status-value" id="workflow-value">Active</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-indicator" id="performance-status">🟢</div>
+                                <div class="status-label">Performance</div>
+                                <div class="status-value" id="performance-value">Optimal</div>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <h3>Documents</h3>
-                            <p class="stat-number" id="total-documents">0</p>
+                    </div>
+
+                    <!-- Analytics Cards -->
+                    <div class="analytics-section">
+                        <div class="analytics-grid">
+                            <!-- Operations Analytics -->
+                            <div class="analytics-card">
+                                <div class="card-header">
+                                    <h4>📈 Operations Analytics</h4>
+                                    <span class="card-period">Last 7 Days</span>
+                                </div>
+                                <div class="analytics-content">
+                                    <div class="metric-row">
+                                        <span class="metric-label">Completed Operations</span>
+                                        <span class="metric-value" id="completed-ops">0</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Pending Operations</span>
+                                        <span class="metric-value" id="pending-ops">0</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Success Rate</span>
+                                        <span class="metric-value metric-percentage" id="success-rate">0%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="operations-progress"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Metrics -->
+                            <div class="analytics-card">
+                                <div class="card-header">
+                                    <h4>⚡ Performance Metrics</h4>
+                                    <span class="card-period">Real-time</span>
+                                </div>
+                                <div class="analytics-content">
+                                    <div class="metric-row">
+                                        <span class="metric-label">Avg. Efficiency</span>
+                                        <span class="metric-value metric-percentage" id="avg-efficiency">0%</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Time Utilization</span>
+                                        <span class="metric-value metric-percentage" id="time-utilization">0%</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Resource Usage</span>
+                                        <span class="metric-value metric-percentage" id="resource-usage">0%</span>
+                                    </div>
+                                    <div class="performance-gauge">
+                                        <div class="gauge-fill" id="performance-gauge"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="analytics-card">
+                                <div class="card-header">
+                                    <h4>🕒 Recent Activity</h4>
+                                    <span class="card-period">Live Feed</span>
+                                </div>
+                                <div class="analytics-content">
+                                    <div class="activity-feed" id="activity-feed">
+                                        <div class="activity-item">
+                                            <div class="activity-time">--:--</div>
+                                            <div class="activity-text">System initialized</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="analytics-card">
+                                <div class="card-header">
+                                    <h4>⚡ Quick Stats</h4>
+                                    <span class="card-period">Summary</span>
+                                </div>
+                                <div class="analytics-content">
+                                    <div class="quick-stats-grid">
+                                        <div class="quick-stat">
+                                            <div class="stat-number" id="total-operations">0</div>
+                                            <div class="stat-label">Total Operations</div>
+                                        </div>
+                                        <div class="quick-stat">
+                                            <div class="stat-number" id="avg-completion-time">0h</div>
+                                            <div class="stat-label">Avg Completion</div>
+                                        </div>
+                                        <div class="quick-stat">
+                                            <div class="stat-number" id="overdue-count">0</div>
+                                            <div class="stat-label">Overdue Items</div>
+                                        </div>
+                                        <div class="quick-stat">
+                                            <div class="stat-number" id="active-projects">0</div>
+                                            <div class="stat-label">Active Projects</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Section -->
+                    <div class="alerts-section" id="alerts-section">
+                        <h3>🚨 System Alerts</h3>
+                        <div class="alerts-container" id="alerts-container">
+                            <!-- Alerts will be populated here -->
                         </div>
                     </div>
                 </section>
@@ -219,6 +381,7 @@
         </div>
     </div>
     
+    <script src="js/sample-data.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>
