@@ -72,11 +72,19 @@ document.addEventListener('DOMContentLoaded', function() {
     addUserBtn.addEventListener('click', function() {
         userFormContainer.style.display = 'block';
         userForm.reset();
+        // Reset form for creating new user
+        const submitBtn = userForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Create User';
+        delete submitBtn.dataset.editing;
     });
 
     cancelUserBtn.addEventListener('click', function() {
         userFormContainer.style.display = 'none';
         userForm.reset();
+        // Reset form state
+        const submitBtn = userForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Create User';
+        delete submitBtn.dataset.editing;
     });
 
     userForm.addEventListener('submit', function(e) {
@@ -88,25 +96,44 @@ document.addEventListener('DOMContentLoaded', function() {
         const role = document.getElementById('user-role').value;
 
         const users = JSON.parse(localStorage.getItem('users'));
-        
-        const newUser = {
-            id: Date.now(),
-            username: username,
-            password: password,
-            email: email,
-            role: role,
-            createdDate: new Date().toISOString()
-        };
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const editingId = submitBtn.dataset.editing;
 
-        users.push(newUser);
+        if (editingId) {
+            // Update existing user
+            const userIndex = users.findIndex(u => u.id === parseInt(editingId));
+            if (userIndex !== -1) {
+                users[userIndex] = {
+                    ...users[userIndex],
+                    username: username,
+                    password: password,
+                    email: email,
+                    role: role
+                };
+                alert('User updated successfully!');
+            }
+        } else {
+            // Create new user
+            const newUser = {
+                id: Date.now(),
+                username: username,
+                password: password,
+                email: email,
+                role: role,
+                createdDate: new Date().toISOString()
+            };
+            users.push(newUser);
+            alert('User created successfully!');
+        }
+
         localStorage.setItem('users', JSON.stringify(users));
 
         userFormContainer.style.display = 'none';
         userForm.reset();
+        submitBtn.textContent = 'Create User';
+        delete submitBtn.dataset.editing;
         loadUsers();
         loadOverview();
-        
-        alert('User created successfully!');
     });
 
     // Document Management
@@ -120,11 +147,59 @@ document.addEventListener('DOMContentLoaded', function() {
     addDocumentBtn.addEventListener('click', function() {
         documentFormContainer.style.display = 'block';
         documentForm.reset();
+        // Reset form for creating new document
+        const submitBtn = documentForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Create Document';
+        delete submitBtn.dataset.editing;
         // Reset operations to one input
         operationsContainer.innerHTML = `
             <div class="operation-item">
-                <input type="text" class="operation-input" placeholder="Operation description">
-                <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                <div class="operation-row">
+                    <input type="text" class="operation-input" placeholder="Operation description" required>
+                    <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                </div>
+                <div class="operation-details">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Minimum Output</label>
+                            <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01">
+                        </div>
+                        <div class="form-col">
+                            <label>Minimum Time (hours)</label>
+                            <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Actual Output</label>
+                            <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01">
+                        </div>
+                        <div class="form-col">
+                            <label>Actual Time (hours)</label>
+                            <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Operation Status</label>
+                            <select class="operation-status">
+                                <option value="">Select Status</option>
+                                <option value="true">Completed</option>
+                                <option value="false">Not Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label>number of operation</label>
+                            <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <label>Notes</label>
+                            <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
         attachOperationListeners();
@@ -133,14 +208,62 @@ document.addEventListener('DOMContentLoaded', function() {
     cancelDocumentBtn.addEventListener('click', function() {
         documentFormContainer.style.display = 'none';
         documentForm.reset();
+        // Reset form state
+        const submitBtn = documentForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Create Document';
+        delete submitBtn.dataset.editing;
     });
 
     addOperationBtn.addEventListener('click', function() {
         const operationItem = document.createElement('div');
         operationItem.className = 'operation-item';
         operationItem.innerHTML = `
-            <input type="text" class="operation-input" placeholder="Operation description">
-            <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+            <div class="operation-row">
+                <input type="text" class="operation-input" placeholder="Operation description" required>
+                <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+            </div>
+            <div class="operation-details">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Minimum Output</label>
+                        <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01">
+                    </div>
+                    <div class="form-col">
+                        <label>Minimum Time (hours)</label>
+                        <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Actual Output</label>
+                        <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01">
+                    </div>
+                    <div class="form-col">
+                        <label>Actual Time (hours)</label>
+                        <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Operation Status</label>
+                        <select class="operation-status">
+                            <option value="">Select Status</option>
+                            <option value="true">Completed</option>
+                            <option value="false">Not Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label>number of operation</label>
+                        <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Notes</label>
+                        <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
         `;
         operationsContainer.appendChild(operationItem);
         attachOperationListeners();
@@ -151,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
         removeButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 if (operationsContainer.children.length > 1) {
-                    this.parentElement.remove();
+                    this.closest('.operation-item').remove();
                 } else {
                     alert('At least one operation is required');
                 }
@@ -168,35 +291,73 @@ document.addEventListener('DOMContentLoaded', function() {
         const title = document.getElementById('doc-title').value;
         const description = document.getElementById('doc-description').value;
         
-        // Collect operations
-        const operationInputs = document.querySelectorAll('.operation-input');
+        // Collect operations with all details
+        const operationItems = document.querySelectorAll('.operation-item');
         const operations = [];
-        operationInputs.forEach(input => {
-            if (input.value.trim()) {
-                operations.push(input.value.trim());
+        
+        operationItems.forEach(item => {
+            const description = item.querySelector('.operation-input').value.trim();
+            if (description) {
+                const minOutput = parseFloat(item.querySelector('.min-output').value) || 0;
+                const minTime = parseFloat(item.querySelector('.min-time').value) || 0;
+                const actualOutput = parseFloat(item.querySelector('.actual-output').value) || 0;
+                const actualTime = parseFloat(item.querySelector('.actual-time').value) || 0;
+                const status = item.querySelector('.operation-status').value;
+                const priority = parseInt(item.querySelector('.operation-priority').value) || null;
+                const notes = item.querySelector('.operation-notes').value.trim();
+                
+                operations.push({
+                    description: description,
+                    minOutput: minOutput,
+                    minTime: minTime,
+                    actualOutput: actualOutput,
+                    actualTime: actualTime,
+                    status: status === 'true' ? true : status === 'false' ? false : null,
+                    priority: priority,
+                    notes: notes
+                });
             }
         });
 
         const documents = JSON.parse(localStorage.getItem('documents'));
-        
-        const newDocument = {
-            id: Date.now(),
-            serial: serial,
-            title: title,
-            description: description,
-            operations: operations,
-            createdDate: new Date().toISOString()
-        };
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const editingId = submitBtn.dataset.editing;
 
-        documents.push(newDocument);
+        if (editingId) {
+            // Update existing document
+            const docIndex = documents.findIndex(d => d.id === parseInt(editingId));
+            if (docIndex !== -1) {
+                documents[docIndex] = {
+                    ...documents[docIndex],
+                    serial: serial,
+                    title: title,
+                    description: description,
+                    operations: operations
+                };
+                alert('Document updated successfully!');
+            }
+        } else {
+            // Create new document
+            const newDocument = {
+                id: Date.now(),
+                serial: serial,
+                title: title,
+                description: description,
+                operations: operations,
+                createdDate: new Date().toISOString()
+            };
+            documents.push(newDocument);
+            alert('Document created successfully!');
+        }
+
         localStorage.setItem('documents', JSON.stringify(documents));
 
         documentFormContainer.style.display = 'none';
         documentForm.reset();
+        submitBtn.textContent = 'Create Document';
+        delete submitBtn.dataset.editing;
         loadDocuments();
         loadOverview();
-        
-        alert('Document created successfully!');
     });
 
     // Load functions
@@ -234,6 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><span class="badge ${roleClass}">${user.role}</span></td>
                 <td>${date}</td>
                 <td>
+                    <button class="action-btn edit" onclick="editUser(${user.id})">Edit</button>
                     <button class="action-btn delete" onclick="deleteUser(${user.id})">Delete</button>
                 </td>
             `;
@@ -255,13 +417,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('tr');
             const date = new Date(doc.createdDate).toLocaleDateString();
             
+            // Count completed operations
+            const completedOps = doc.operations.filter(op => op.status === true).length;
+            const totalOps = doc.operations.length;
+            
             row.innerHTML = `
                 <td><strong>${doc.serial}</strong></td>
                 <td>${doc.title}</td>
-                <td>${doc.operations.length}</td>
+                <td>
+                    <span class="operations-count">${totalOps} total</span>
+                    <br>
+                    <span class="completed-count">${completedOps} completed</span>
+                </td>
                 <td>${date}</td>
                 <td>
                     <button class="action-btn view" onclick="viewDocument(${doc.id})">View</button>
+                    <button class="action-btn edit" onclick="editDocument(${doc.id})">Edit</button>
                     <button class="action-btn delete" onclick="deleteDocument(${doc.id})">Delete</button>
                 </td>
             `;
@@ -270,6 +441,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Make functions global for onclick handlers
+    window.editUser = function(userId) {
+        const users = JSON.parse(localStorage.getItem('users'));
+        const user = users.find(u => u.id === userId);
+        
+        if (user) {
+            // Populate form with existing data
+            document.getElementById('user-username').value = user.username;
+            document.getElementById('user-password').value = user.password;
+            document.getElementById('user-email').value = user.email;
+            document.getElementById('user-role').value = user.role;
+            
+            // Show form and change button text
+            userFormContainer.style.display = 'block';
+            const submitBtn = userForm.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Update User';
+            submitBtn.dataset.editing = userId;
+        }
+    };
+
     window.deleteUser = function(userId) {
         if (confirm('Are you sure you want to delete this user?')) {
             let users = JSON.parse(localStorage.getItem('users'));
@@ -277,6 +467,93 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('users', JSON.stringify(users));
             loadUsers();
             loadOverview();
+        }
+    };
+
+    window.editDocument = function(docId) {
+        const documents = JSON.parse(localStorage.getItem('documents'));
+        const doc = documents.find(d => d.id === docId);
+        
+        if (doc) {
+            // Populate form with existing data
+            document.getElementById('doc-serial').value = doc.serial;
+            document.getElementById('doc-title').value = doc.title;
+            document.getElementById('doc-description').value = doc.description || '';
+            
+            // Populate operations
+            operationsContainer.innerHTML = '';
+            doc.operations.forEach(op => {
+                const operationItem = document.createElement('div');
+                operationItem.className = 'operation-item';
+                
+                // Handle both old string format and new object format
+                const description = typeof op === 'string' ? op : op.description;
+                const minOutput = typeof op === 'object' ? op.minOutput || '' : '';
+                const minTime = typeof op === 'object' ? op.minTime || '' : '';
+                const actualOutput = typeof op === 'object' ? op.actualOutput || '' : '';
+                const actualTime = typeof op === 'object' ? op.actualTime || '' : '';
+                const status = typeof op === 'object' ? op.status : '';
+                const priority = typeof op === 'object' ? op.priority || '' : '';
+                const notes = typeof op === 'object' ? op.notes || '' : '';
+                
+                operationItem.innerHTML = `
+                    <div class="operation-row">
+                        <input type="text" class="operation-input" placeholder="Operation description" required value="${description}">
+                        <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                    </div>
+                    <div class="operation-details">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Minimum Output</label>
+                                <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01" value="${minOutput}">
+                            </div>
+                            <div class="form-col">
+                                <label>Minimum Time (hours)</label>
+                                <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1" value="${minTime}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Actual Output</label>
+                                <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01" value="${actualOutput}">
+                            </div>
+                            <div class="form-col">
+                                <label>Actual Time (hours)</label>
+                                <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1" value="${actualTime}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Operation Status</label>
+                                <select class="operation-status">
+                                    <option value="">Select Status</option>
+                                    <option value="true" ${status === true ? 'selected' : ''}>Completed</option>
+                                    <option value="false" ${status === false ? 'selected' : ''}>Not Completed</option>
+                                </select>
+                            </div>
+                            <div class="form-col">
+                                <label>number of operation</label>
+                                <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1" value="${priority}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Notes</label>
+                                <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3">${notes}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                operationsContainer.appendChild(operationItem);
+            });
+            
+            attachOperationListeners();
+            
+            // Show form and change button text
+            documentFormContainer.style.display = 'block';
+            const submitBtn = documentForm.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Update Document';
+            submitBtn.dataset.editing = docId;
         }
     };
 
@@ -298,30 +575,86 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('document-modal');
             const modalBody = document.getElementById('modal-body');
             
-            const operationsList = doc.operations.map(op => `<li>${op}</li>`).join('');
+            const operationsTable = doc.operations.map((op, index) => {
+                if (typeof op === 'string') {
+                    // Legacy format support
+                    return `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${op}</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    `;
+                } else {
+                    // New format with detailed information
+                    const statusText = op.status === true ? 'Completed' : op.status === false ? 'Not Completed' : 'Not Set';
+                    const statusClass = op.status === true ? 'status-completed' : op.status === false ? 'status-incomplete' : 'status-unset';
+                    
+                    return `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><strong>${op.description}</strong></td>
+                            <td>${op.minOutput || '-'}</td>
+                            <td>${op.minTime || '-'}</td>
+                            <td>${op.actualOutput || '-'}</td>
+                            <td>${op.actualTime || '-'}</td>
+                            <td><span class="${statusClass}">${statusText}</span></td>
+                            <td>${op.priority || '-'}</td>
+                            <td class="notes-cell">${op.notes || '-'}</td>
+                        </tr>
+                    `;
+                }
+            }).join('');
             
             modalBody.innerHTML = `
-                <div class="detail-item">
-                    <strong>Serial Number:</strong>
-                    <p>${doc.serial}</p>
+                <div class="document-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Serial Number:</strong>
+                            <span>${doc.serial}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Title:</strong>
+                            <span>${doc.title}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Description:</strong>
+                            <span>${doc.description || 'No description provided'}</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Created Date:</strong>
+                            <span>${new Date(doc.createdDate).toLocaleString()}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="detail-item">
-                    <strong>Title:</strong>
-                    <p>${doc.title}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>Description:</strong>
-                    <p>${doc.description || 'No description provided'}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>Created Date:</strong>
-                    <p>${new Date(doc.createdDate).toLocaleString()}</p>
-                </div>
-                <div class="detail-item">
-                    <strong>Operations:</strong>
-                    <ul class="operations-list">
-                        ${operationsList}
-                    </ul>
+                <div class="operations-section">
+                    <h3>Operations Details</h3>
+                    <div class="table-wrapper">
+                        <table class="operations-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Description</th>
+                                    <th>Min Output</th>
+                                    <th>Min Time (hrs)</th>
+                                    <th>Actual Output</th>
+                                    <th>Actual Time (hrs)</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${operationsTable}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             `;
             

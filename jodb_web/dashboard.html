@@ -132,8 +132,52 @@
                                 <label>Operations</label>
                                 <div id="operations-container">
                                     <div class="operation-item">
-                                        <input type="text" class="operation-input" placeholder="Operation description">
-                                        <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                                        <div class="operation-row">
+                                            <input type="text" class="operation-input" placeholder="Operation description" required>
+                                            <button type="button" class="btn btn-small btn-danger remove-operation">Remove</button>
+                                        </div>
+                                        <div class="operation-details">
+                                            <div class="form-row">
+                                                <div class="form-col">
+                                                    <label>Minimum Output</label>
+                                                    <input type="number" class="min-output" placeholder="Min output" min="0" step="0.01">
+                                                </div>
+                                                <div class="form-col">
+                                                    <label>Minimum Time (hours)</label>
+                                                    <input type="number" class="min-time" placeholder="Min time" min="0" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-col">
+                                                    <label>Actual Output</label>
+                                                    <input type="number" class="actual-output" placeholder="Actual output" min="0" step="0.01">
+                                                </div>
+                                                <div class="form-col">
+                                                    <label>Actual Time (hours)</label>
+                                                    <input type="number" class="actual-time" placeholder="Actual time" min="0" step="0.1">
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-col">
+                                                    <label>Operation Status</label>
+                                                    <select class="operation-status">
+                                                        <option value="">Select Status</option>
+                                                        <option value="true">Completed</option>
+                                                        <option value="false">Not Completed</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-col">
+                                                    <label>number of operation</label>
+                                                    <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-col">
+                                                    <label>Notes</label>
+                                                    <textarea class="operation-notes" placeholder="Additional notes or comments" rows="3"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-secondary btn-small" id="add-operation-btn">Add Operation</button>
