@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Production Line Assembly',
                 description: 'Complete assembly line setup and optimization project',
                 createdDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+                assignedUsers: [1, 3], // john_tech and mike_tech
                 operations: [
                     {
                         description: 'Initial setup and calibration',
@@ -61,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Quality Control Implementation',
                 description: 'Implement comprehensive quality control system',
                 createdDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+                assignedUsers: [1], // john_tech (only technicians)
                 operations: [
                     {
                         description: 'Develop QC protocols and procedures',
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Maintenance Schedule Optimization',
                 description: 'Optimize equipment maintenance schedules for maximum efficiency',
                 createdDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                assignedUsers: [1, 3], // john_tech and mike_tech (only technicians)
                 operations: [
                     {
                         description: 'Analyze current maintenance data',
@@ -149,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Energy Efficiency Project',
                 description: 'Comprehensive energy reduction initiative - target 20% reduction',
                 createdDate: new Date().toISOString(),
+                assignedUsers: [1, 3], // All technicians assigned
                 operations: [
                     {
                         description: 'Energy audit and baseline assessment',

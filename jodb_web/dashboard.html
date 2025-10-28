@@ -291,6 +291,21 @@
                                 <textarea id="doc-description" rows="3"></textarea>
                             </div>
                             <div class="form-group">
+                                <label>� Assign to Technicians</label>
+                                <div class="user-assignment-section">
+                                    <div class="assignment-header">
+                                        <span class="assignment-info">Select one or more technicians to assign this document:</span>
+                                        <button type="button" class="btn btn-small btn-secondary" id="select-all-users">Select All Technicians</button>
+                                    </div>
+                                    <div class="users-checklist" id="users-checklist">
+                                        <!-- Users will be populated here -->
+                                    </div>
+                                    <div class="selected-users-summary">
+                                        <strong>Selected: </strong><span id="selected-users-count">0</span> technician(s)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
                                 <label>Operations</label>
                                 <div id="operations-container">
                                     <div class="operation-item">
@@ -358,6 +373,7 @@
                                     <th>Serial Number</th>
                                     <th>Title</th>
                                     <th>Operations Count</th>
+                                    <th>Assigned Technicians</th>
                                     <th>Created Date</th>
                                     <th>Actions</th>
                                 </tr>

@@ -127,6 +127,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 createdDate: new Date().toISOString()
             };
             users.push(newUser);
+            
+            // Track user creation history
+            addSystemHistory('user_created', `New ${role} user "${username}" created`);
+            
             alert('User created successfully!');
         }
 
@@ -155,6 +159,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = documentForm.querySelector('button[type="submit"]');
         submitBtn.textContent = 'Create Document';
         delete submitBtn.dataset.editing;
+        // Populate users checklist
+        populateUsersChecklist();
         // Reset operations to one input
         operationsContainer.innerHTML = `
             <div class="operation-item">
@@ -288,12 +294,273 @@ document.addEventListener('DOMContentLoaded', function() {
 
     attachOperationListeners();
 
+    // User Assignment Functions
+    function populateUsersChecklist() {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const technicians = users.filter(user => user.role === 'technician');
+        const usersChecklist = document.getElementById('users-checklist');
+        
+        if (technicians.length === 0) {
+            usersChecklist.innerHTML = '<div class="no-users-message">No technicians available. Please create technician users first.</div>';
+            return;
+        }
+        
+        usersChecklist.innerHTML = technicians.map(user => `
+            <div class="user-checkbox-item" data-user-id="${user.id}">
+                <input type="checkbox" class="user-checkbox" id="user-${user.id}" value="${user.id}">
+                <div class="user-checkbox-info">
+                    <div class="user-name">${user.username}</div>
+                    <div class="user-role ${user.role}">${user.role}</div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Add event listeners for checkboxes
+        const checkboxItems = document.querySelectorAll('.user-checkbox-item');
+        checkboxItems.forEach(item => {
+            const checkbox = item.querySelector('.user-checkbox');
+            
+            item.addEventListener('click', function(e) {
+                if (e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                item.classList.toggle('selected', checkbox.checked);
+                updateSelectedUsersCount();
+            });
+            
+            checkbox.addEventListener('change', function() {
+                item.classList.toggle('selected', this.checked);
+                updateSelectedUsersCount();
+            });
+        });
+    }
+    
+    function updateSelectedUsersCount() {
+        const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+        document.getElementById('selected-users-count').textContent = selectedCheckboxes.length;
+    }
+    
+    function getSelectedUserIds() {
+        const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+        return Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+    }
+    
+    function setSelectedUsers(userIds) {
+        // Clear all selections first
+        document.querySelectorAll('.user-checkbox').forEach(cb => {
+            cb.checked = false;
+            cb.closest('.user-checkbox-item').classList.remove('selected');
+        });
+        
+        // Select specified users
+        userIds.forEach(userId => {
+            const checkbox = document.getElementById(`user-${userId}`);
+            if (checkbox) {
+                checkbox.checked = true;
+                checkbox.closest('.user-checkbox-item').classList.add('selected');
+            }
+        });
+        
+        updateSelectedUsersCount();
+    }
+    
+    // Select All Users functionality
+    document.getElementById('select-all-users')?.addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.user-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        
+        checkboxes.forEach(cb => {
+            cb.checked = !allChecked;
+            cb.closest('.user-checkbox-item').classList.toggle('selected', !allChecked);
+        });
+        
+        updateSelectedUsersCount();
+        this.textContent = allChecked ? 'Select All Technicians' : 'Deselect All';
+    });
+
+    // History tracking functions
+    function addDocumentHistory(docId, action, details, oldValues = null) {
+        const currentUser = localStorage.getItem('username') || 'System';
+        const timestamp = new Date().toISOString();
+        
+        const historyEntry = {
+            id: Date.now(),
+            timestamp: timestamp,
+            user: currentUser,
+            action: action,
+            details: details,
+            oldValues: oldValues
+        };
+
+        // Get existing history or initialize
+        let documentHistory = JSON.parse(localStorage.getItem('documentHistory') || '{}');
+        if (!documentHistory[docId]) {
+            documentHistory[docId] = [];
+        }
+
+        documentHistory[docId].unshift(historyEntry); // Add to beginning (newest first)
+        
+        // Keep only last 50 entries per document
+        if (documentHistory[docId].length > 50) {
+            documentHistory[docId] = documentHistory[docId].slice(0, 50);
+        }
+
+        localStorage.setItem('documentHistory', JSON.stringify(documentHistory));
+    }
+
+    function generateDocumentHistory(doc) {
+        const documentHistory = JSON.parse(localStorage.getItem('documentHistory') || '{}');
+        const history = documentHistory[doc.id] || [];
+        
+        if (history.length === 0) {
+            return `
+                <div class="history-item history-create">
+                    <div class="history-icon">📝</div>
+                    <div class="history-content">
+                        <div class="history-action">Document Created</div>
+                        <div class="history-details">Initial document creation</div>
+                        <div class="history-meta">
+                            <span class="history-user">System</span>
+                            <span class="history-time">${new Date(doc.createdDate).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        return history.map(entry => {
+            const actionIcons = {
+                'created': '📝',
+                'updated': '✏️',
+                'assigned': '👤',
+                'unassigned': '👤',
+                'operation_added': '➕',
+                'operation_removed': '➖',
+                'operation_updated': '🔄',
+                'status_changed': '🔄'
+            };
+
+            const icon = actionIcons[entry.action] || '📋';
+            
+            return `
+                <div class="history-item history-${entry.action}">
+                    <div class="history-icon">${icon}</div>
+                    <div class="history-content">
+                        <div class="history-action">${formatHistoryAction(entry.action)}</div>
+                        <div class="history-details">${entry.details}</div>
+                        <div class="history-meta">
+                            <span class="history-user">${entry.user}</span>
+                            <span class="history-time">${new Date(entry.timestamp).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function formatHistoryAction(action) {
+        const actionMap = {
+            'created': 'Document Created',
+            'updated': 'Document Updated', 
+            'assigned': 'Technician Assigned',
+            'unassigned': 'Technician Unassigned',
+            'operation_added': 'Operation Added',
+            'operation_removed': 'Operation Removed',
+            'operation_updated': 'Operation Updated',
+            'status_changed': 'Status Changed'
+        };
+        return actionMap[action] || action;
+    }
+
+    function detectDocumentChanges(oldDoc, newDoc) {
+        const changes = [];
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+        // Check basic document changes
+        if (oldDoc.title !== newDoc.title) {
+            changes.push(`Title changed from "${oldDoc.title}" to "${newDoc.title}"`);
+        }
+        if (oldDoc.description !== newDoc.description) {
+            changes.push(`Description updated`);
+        }
+        if (oldDoc.serial !== newDoc.serial) {
+            changes.push(`Serial number changed from "${oldDoc.serial}" to "${newDoc.serial}"`);
+        }
+
+        // Check assignment changes
+        const oldAssigned = oldDoc.assignedUsers || [];
+        const newAssigned = newDoc.assignedUsers || [];
+        
+        const addedUsers = newAssigned.filter(id => !oldAssigned.includes(id));
+        const removedUsers = oldAssigned.filter(id => !newAssigned.includes(id));
+
+        addedUsers.forEach(userId => {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                changes.push(`Technician ${user.username} assigned`);
+            }
+        });
+
+        removedUsers.forEach(userId => {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                changes.push(`Technician ${user.username} unassigned`);
+            }
+        });
+
+        // Check operations changes
+        const oldOps = oldDoc.operations || [];
+        const newOps = newDoc.operations || [];
+
+        if (newOps.length > oldOps.length) {
+            changes.push(`${newOps.length - oldOps.length} operation(s) added`);
+        } else if (newOps.length < oldOps.length) {
+            changes.push(`${oldOps.length - newOps.length} operation(s) removed`);
+        }
+
+        // Check for operation status changes
+        oldOps.forEach((oldOp, index) => {
+            const newOp = newOps[index];
+            if (newOp && oldOp.status !== newOp.status) {
+                const statusText = newOp.status === true ? 'Completed' : 'Not Completed';
+                changes.push(`Operation "${newOp.description}" status changed to ${statusText}`);
+            }
+        });
+
+        return changes;
+    }
+
+    function addSystemHistory(action, details) {
+        const currentUser = localStorage.getItem('username') || 'System';
+        const timestamp = new Date().toISOString();
+        
+        const historyEntry = {
+            id: Date.now(),
+            timestamp: timestamp,
+            user: currentUser,
+            action: action,
+            details: details
+        };
+
+        // Get existing system history
+        let systemHistory = JSON.parse(localStorage.getItem('systemHistory') || '[]');
+        systemHistory.unshift(historyEntry); // Add to beginning
+
+        // Keep only last 100 system entries
+        if (systemHistory.length > 100) {
+            systemHistory = systemHistory.slice(0, 100);
+        }
+
+        localStorage.setItem('systemHistory', JSON.stringify(systemHistory));
+    }
+
     documentForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         const serial = document.getElementById('doc-serial').value;
         const title = document.getElementById('doc-title').value;
         const description = document.getElementById('doc-description').value;
+        const assignedUserIds = getSelectedUserIds();
         
         // Collect operations with all details
         const operationItems = document.querySelectorAll('.operation-item');
@@ -331,26 +598,59 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update existing document
             const docIndex = documents.findIndex(d => d.id === parseInt(editingId));
             if (docIndex !== -1) {
-                documents[docIndex] = {
+                const oldDoc = { ...documents[docIndex] };
+                const newDoc = {
                     ...documents[docIndex],
                     serial: serial,
                     title: title,
                     description: description,
-                    operations: operations
+                    operations: operations,
+                    assignedUsers: assignedUserIds,
+                    lastModified: new Date().toISOString()
                 };
+                
+                documents[docIndex] = newDoc;
+                
+                // Track history
+                const changes = detectDocumentChanges(oldDoc, newDoc);
+                if (changes.length > 0) {
+                    addDocumentHistory(
+                        parseInt(editingId), 
+                        'updated', 
+                        changes.join('; '),
+                        oldDoc
+                    );
+                }
+                
                 alert('Document updated successfully!');
             }
         } else {
             // Create new document
+            const newDocumentId = Date.now();
             const newDocument = {
-                id: Date.now(),
+                id: newDocumentId,
                 serial: serial,
                 title: title,
                 description: description,
                 operations: operations,
+                assignedUsers: assignedUserIds,
                 createdDate: new Date().toISOString()
             };
             documents.push(newDocument);
+            
+            // Track creation history
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const assignedTechNames = assignedUserIds.map(id => {
+                const user = users.find(u => u.id === id);
+                return user ? user.username : 'Unknown';
+            }).join(', ');
+            
+            addDocumentHistory(
+                newDocumentId, 
+                'created', 
+                `Document created with ${operations.length} operation(s)${assignedUserIds.length > 0 ? `. Assigned to: ${assignedTechNames}` : ''}`
+            );
+            
             alert('Document created successfully!');
         }
 
@@ -667,6 +967,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const completedOps = doc.operations.filter(op => op.status === true).length;
             const totalOps = doc.operations.length;
             
+            // Get assigned users
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            let assignedUsersHtml = '';
+            
+            if (doc.assignedUsers && doc.assignedUsers.length > 0) {
+                const assignedUserNames = doc.assignedUsers.map(userId => {
+                    const user = users.find(u => u.id === userId);
+                    return user ? `<span class="assigned-user-tag ${user.role}">${user.username}</span>` : '';
+                }).filter(name => name !== '').join('');
+                
+                assignedUsersHtml = assignedUserNames || '<span class="no-assignment">Unassigned</span>';
+            } else {
+                assignedUsersHtml = '<span class="no-assignment">Unassigned</span>';
+            }
+            
             row.innerHTML = `
                 <td><strong>${doc.serial}</strong></td>
                 <td>${doc.title}</td>
@@ -674,6 +989,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="operations-count">${totalOps} total</span>
                     <br>
                     <span class="completed-count">${completedOps} completed</span>
+                </td>
+                <td class="assigned-users-cell">
+                    ${assignedUsersHtml}
                 </td>
                 <td>${date}</td>
                 <td>
@@ -795,6 +1113,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             attachOperationListeners();
             
+            // Populate users checklist and set selected users
+            populateUsersChecklist();
+            if (doc.assignedUsers && Array.isArray(doc.assignedUsers)) {
+                setSelectedUsers(doc.assignedUsers);
+            }
+            
             // Show form and change button text
             documentFormContainer.style.display = 'block';
             const submitBtn = documentForm.querySelector('button[type="submit"]');
@@ -897,6 +1221,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }).join('');
             
+            // Get assigned users information
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            let assignedUsersInfo = '';
+            
+            if (doc.assignedUsers && doc.assignedUsers.length > 0) {
+                const assignedUserDetails = doc.assignedUsers.map(userId => {
+                    const user = users.find(u => u.id === userId);
+                    return user ? `<span class="assigned-user-tag ${user.role}">${user.username} (${user.role})</span>` : '';
+                }).filter(detail => detail !== '').join('');
+                
+                assignedUsersInfo = assignedUserDetails || '<span class="no-assignment">No users assigned</span>';
+            } else {
+                assignedUsersInfo = '<span class="no-assignment">No users assigned</span>';
+            }
+            
             modalBody.innerHTML = `
                 <div class="document-info">
                     <div class="info-grid">
@@ -916,6 +1255,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             <strong>Created Date:</strong>
                             <span>${new Date(doc.createdDate).toLocaleString()}</span>
                         </div>
+                        <div class="info-item full-width">
+                            <strong>� Assigned Technicians:</strong>
+                            <div class="assigned-users-display">
+                                ${assignedUsersInfo}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="history-section">
+                    <h3>📜 Document History</h3>
+                    <div class="history-timeline" id="document-history">
+                        ${generateDocumentHistory(doc)}
                     </div>
                 </div>
                 <div class="time-metrics">

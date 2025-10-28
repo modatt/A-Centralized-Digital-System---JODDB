@@ -208,6 +208,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 70px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .top-bar h1 {
@@ -217,6 +219,25 @@ body {
 
 .user-info {
     color: var(--text-secondary);
+    text-align: right;
+    font-weight: 500;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.user-info span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.user-info strong {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 .content-area {
@@ -637,6 +658,18 @@ tbody tr:hover {
     
     .section-header .btn {
         width: 100%;
+    }
+    
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        text-align: left;
+    }
+    
+    .top-bar .user-info {
+        align-self: flex-end;
+        text-align: right;
     }
     
     .form-actions {
@@ -1175,6 +1208,274 @@ tbody tr:hover {
 .quick-stat .stat-label {
     font-size: 0.8rem;
     color: var(--text-secondary);
+}
+
+/* User Assignment Styles */
+.user-assignment-section {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.assignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.assignment-info {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.users-checklist {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+}
+
+.user-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-checkbox-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-checkbox-item.selected {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: var(--primary-color);
+}
+
+.user-checkbox {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.user-checkbox-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.user-role {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+
+.user-role.technician {
+    color: var(--success-color);
+}
+
+.user-role.supervisor {
+    color: var(--warning-color);
+}
+
+.selected-users-summary {
+    padding: 8px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.assigned-users-display {
+    margin-top: 8px;
+}
+
+.assigned-user-tag {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin: 2px 4px;
+    font-weight: 500;
+}
+
+.assigned-user-tag.technician {
+    background: var(--success-color);
+}
+
+.assigned-user-tag.supervisor {
+    background: var(--warning-color);
+}
+
+.assigned-users-cell {
+    max-width: 200px;
+}
+
+.assigned-users-cell .assigned-user-tag {
+    margin: 1px 2px;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+}
+
+.no-assignment {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.no-users-message {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Document History Styles */
+.history-section {
+    background: var(--card-background);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+}
+
+.history-section h3 {
+    color: var(--text-primary);
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+}
+
+.history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.history-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.history-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-item.history-created {
+    border-left-color: var(--success-color);
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+}
+
+.history-item.history-updated {
+    border-left-color: var(--primary-color);
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+}
+
+.history-item.history-assigned {
+    border-left-color: var(--warning-color);
+    background: linear-gradient(135deg, #fffbeb 0%, #fefce8 100%);
+}
+
+.history-item.history-status_changed {
+    border-left-color: #8b5cf6;
+    background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+}
+
+.history-icon {
+    font-size: 1.5rem;
+    min-width: 24px;
+    text-align: center;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-action {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.history-details {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.history-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.history-user {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.history-time {
+    font-style: italic;
+}
+
+/* Scrollbar styling for history timeline */
+.history-timeline::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-timeline::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.history-timeline::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.history-timeline::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 /* Alerts Section */
