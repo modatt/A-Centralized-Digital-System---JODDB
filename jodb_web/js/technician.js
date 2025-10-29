@@ -1,6 +1,89 @@
 // Technician dashboard logic
 (function(){
   document.addEventListener('DOMContentLoaded', function() {
+    // Team-specific operations setup: EDIT ONLY THE ARRAYS BELOW
+    const PRODUCTION_OPERATIONS = [
+		'Assemblage I',
+		'Assemblage II',
+		'Assemblage II tubeless',
+		'Final Touch - Cleaning&Packing',
+		'Final Touch - Paint&Labeling',
+		'Final Touch - Purge Vulve&Cleaning',
+		'FocusA340',
+		'FocusA360',
+		'Lens Cleaning',
+		'Objective and Doublet',
+		'Nitrogen',
+		'Sub-Assemblies',
+		'Battery Contact Assy.',
+		'Battery Cover Assy.',
+		'Beam Combiner Assy.',
+		'Cover Assy.',
+		'Eyepiece Assy.',
+		'Focus Assy.A340',
+		'Focus Assy.A360',
+		'Reticle Assy.',
+		'Tube Assy.',
+		'Troubleshooting',
+		'Adaptors Installation',
+		'Add Tube Spacers',
+		'Adjust the Fiber Optic',
+		'Adjusters',
+		'Attaching Label',
+		'Bushing Installation',
+		'Change Battery contact',
+		'Change Beam',
+		'Change Eye Piece',
+		'Change Power Card',
+		'Change Reticle',
+		'Change Reticle-Assy.II',
+		'Clean the Reticle',
+		'Clean Assemblage 1',
+		'Clean Assemblage 2',
+		'Contact Battery Installation',
+		'Cover Assembly Only',
+		'Cover Lacing',
+		'Cover lacing and macaroon',
+		'Cover Silicon',
+		'Dirt on Beam-Assy.I',
+		'Dirt on Beam-Assy.II',
+		'Dirt on Eye Piece',
+		'Dirt on Objective Lens',
+		'Dirt on Tube',
+		'Dirt on Tube- Air blow gun',
+		'Disassemble Assemblage I',
+		'Epoxy on Blue Wire',
+		'Epoxy on Blue Wire',
+		'ESD Line Test',
+      // 'Assembly', 'Soldering', 'Packaging', 'Handover Documentation'
+    ];
+    const TESTER_OPERATIONS = [
+		'Adjustment',
+		'Unit Test',
+		'Immersion'
+      // 'Unit Test', 'Integration Test', 'Bug Verification', 'Test Report'
+    ];
+    const QUALITY_OPERATIONS = [
+		'Quality Assemblage I',
+		'Quality Assemblage II',
+		'Final inspection',
+		'Packing'
+      // 'Incoming Inspection', 'Process Audit', 'Calibration', 'Final QA Report'
+    ];
+
+    const TEAM_OPERATIONS = {
+      production: PRODUCTION_OPERATIONS,
+      tester: TESTER_OPERATIONS,
+      quality: QUALITY_OPERATIONS,
+      _all: [] // fallback if team not set/missing
+    };
+
+    const TEAM_OTHER_PLACEHOLDER = {
+      production: 'Describe a production-specific operation...',
+      tester: 'Describe a testing-specific operation...',
+      quality: 'Describe a quality-specific operation...',
+      _default: 'Describe a custom operation for this team...'
+    };
     // Remove any legacy priority fields from stored documents
     try {
       const docs = JSON.parse(localStorage.getItem('documents') || '[]');
@@ -139,6 +222,7 @@
     window.addEventListener('click', (e)=>{ if (e.target === modal) modal.style.display = 'none'; });
 
   let currentOpsList = [];
+  let currentOtherPlaceholder = 'Enter custom operation';
 
   function openDocModal(docId){
       const docs = JSON.parse(localStorage.getItem('documents') || '[]');
@@ -168,13 +252,25 @@
       if (nameEl) nameEl.value = currentUsername;
       if (idEl) idEl.value = (myId ?? '');
 
+  // Team-aware defaults for dropdowns
+  const teamKey = (doc.assignedTeam || '').toLowerCase();
+  const teamDefaults = Array.from(new Set((TEAM_OPERATIONS[teamKey] || TEAM_OPERATIONS._all || []).filter(Boolean)));
+  currentOpsList = teamDefaults.length
+    ? teamDefaults
+    : Array.from(new Set((Array.isArray(doc.operations) ? doc.operations : [])
+        .map(o => typeof o === 'string' ? o : (o?.description || ''))
+        .filter(Boolean)));
+  currentOtherPlaceholder = TEAM_OTHER_PLACEHOLDER[teamKey] || TEAM_OTHER_PLACEHOLDER._default;
+
   const ops = Array.isArray(doc.operations) ? doc.operations : [];
-  // Build operations list (descriptions) for dropdowns
-  currentOpsList = Array.from(new Set(ops.map(o => typeof o === 'string' ? o : (o?.description || '')).filter(Boolean)));
       const tbody = document.getElementById('tech-ops-tbody');
       if (tbody) {
         if (ops.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No operations defined for this document.</td></tr>';
+          if (teamDefaults.length > 0) {
+            tbody.innerHTML = teamDefaults.map((desc, idx) => renderOpRow({ description: desc }, idx)).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No operations defined for this document.</td></tr>';
+          }
         } else {
           tbody.innerHTML = ops.map((op, idx) => renderOpRow(op, idx)).join('');
         }
@@ -205,7 +301,7 @@
             </select>
           </td>
           <td>
-            <input type="text" class="tech-operation-other" placeholder="Enter custom operation" value="${!isKnown ? escapeHtml(opDesc) : ''}" style="${isKnown ? 'display:none;' : ''}" />
+            <input type="text" class="tech-operation-other" placeholder="${escapeHtml(currentOtherPlaceholder || 'Enter custom operation')}" value="${!isKnown ? escapeHtml(opDesc) : ''}" style="${isKnown ? 'display:none;' : ''}" />
           </td>
           <td><input type="number" step="0.01" class="tech-min-output" value="${op.minOutput ?? ''}" /></td>
           <td><input type="number" step="0.1" class="tech-min-time" value="${op.minTime ?? ''}" /></td>
