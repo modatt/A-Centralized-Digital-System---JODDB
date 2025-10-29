@@ -299,57 +299,11 @@
                                 <label for="doc-job-order">Job Order</label>
                                 <input type="text" id="doc-job-order" name="Job_Order" required>
                             </div>
-                            <div class="form-group">
-                                <label for="doc-job-order-id">Job Order ID</label>
-                                <input type="text" id="doc-job-order-id" name="Job_Order_ID" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="doc-device">Device</label>
-                                <input type="text" id="doc-device" name="Device">
-                            </div>
-                            <div class="form-group">
-                                <label for="doc-device-no">Device No</label>
-                                <input type="text" id="doc-device-no" name="Device_no">
-                            </div>
-                            <div class="form-group">
-                                <label for="doc-device-serial">Device Serial No</label>
-                                <input type="text" id="doc-device-serial" name="Device_Serial_no">
-                            </div>
-                            <div class="form-group">
-                                <label for="doc-assigned-team">Assigned Team</label>
-                                <select id="doc-assigned-team" name="Assigned_Team">
-                                    <option value="">Select team</option>
-                                    <option value="quality">quality</option>
-                                    <option value="tester">tester</option>
-                                    <option value="production">production</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="doc-supervisor-select">Supervisor</label>
-                                <select id="doc-supervisor-select" name="Supervisor">
-                                    <option value="">Select supervisor</option>
-                                </select>
-                            </div>
                             <!-- Devices builder: add one or more devices with team and tasks -->
                             <div class="form-group">
                                 <label>Devices</label>
                                 <div id="devices-container"></div>
                                 <button type="button" class="btn btn-secondary btn-small" id="add-device-btn">Add New Device</button>
-                            </div>
-                            <div class="form-group">
-                                <label>� Assign to Technicians</label>
-                                <div class="user-assignment-section">
-                                    <div class="assignment-header">
-                                        <span class="assignment-info">Select one or more technicians to assign this document:</span>
-                                        <button type="button" class="btn btn-small btn-secondary" id="select-all-users">Select All Technicians</button>
-                                    </div>
-                                    <div class="users-checklist" id="users-checklist">
-                                        <!-- Users will be populated here -->
-                                    </div>
-                                    <div class="selected-users-summary">
-                                        <strong>Selected: </strong><span id="selected-users-count">0</span> technician(s)
-                                    </div>
-                                </div>
                             </div>
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">Create Document</button>
@@ -363,12 +317,8 @@
                             <thead>
                                 <tr>
                                     <th>Job Order</th>
-                                    <th>Job Order ID</th>
-                                    <th>Device</th>
-                                    <th>Device No</th>
-                                    <th>Device Serial No</th>
-                                    <th>Assigned Team</th>
-                                    <th>Supervisor</th>
+                                    <th>Devices</th>
+                                    <th>Operations</th>
                                     <th>Assigned Technicians</th>
                                     <th>Created Date</th>
                                     <th>Actions</th>

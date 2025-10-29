@@ -525,9 +525,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // User Assignment Functions
     function populateUsersChecklist() {
+        const usersChecklist = document.getElementById('users-checklist');
+        if (!usersChecklist) return; // Users assignment UI not present
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const technicians = users.filter(user => user.role === 'technician');
-        const usersChecklist = document.getElementById('users-checklist');
 
         if (technicians.length === 0) {
             usersChecklist.innerHTML = '<div class="no-users-message">No technicians available. Please create technician users first.</div>';
@@ -565,8 +566,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateSelectedUsersCount() {
+        const countEl = document.getElementById('selected-users-count');
+        if (!countEl) return; // Users assignment UI not present
         const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
-        document.getElementById('selected-users-count').textContent = selectedCheckboxes.length;
+        countEl.textContent = selectedCheckboxes.length;
     }
 
     function getSelectedUserIds() {
@@ -575,8 +578,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setSelectedUsers(userIds) {
+        const checklist = document.querySelectorAll('.user-checkbox');
+        if (!checklist || checklist.length === 0) return; // Users assignment UI not present
         // Clear all selections first
-        document.querySelectorAll('.user-checkbox').forEach(cb => {
+        checklist.forEach(cb => {
             cb.checked = false;
             cb.closest('.user-checkbox-item').classList.remove('selected');
         });
@@ -829,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
             devices.forEach(d => {
                 (d.tasks || []).forEach(t => {
                     if (!t.description) return;
-                    taskOps.push({ description: t.description, minOutput: 0, minTime: 0, actualOutput: 0, actualTime: 0, status: null, notes: '' });
+                    taskOps.push({ description: t.description, deviceName: d.name || '', minOutput: 0, minTime: 0, actualOutput: 0, actualTime: 0, status: null, notes: '' });
                 });
             });
             // If legacy operations UI also used, keep both; else use taskOps
@@ -1257,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = document.getElementById('documents-tbody');
 
         if (documents.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No documents found. Create your first document!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No documents found. Create your first document!</td></tr>';
             return;
         }
 
@@ -1266,19 +1271,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = document.createElement('tr');
             const date = new Date(doc.createdDate).toLocaleDateString();
 
-            const completedOps = doc.operations.filter(op => op.status === true).length;
-            const totalOps = doc.operations.length;
+            // Operations metrics (prefer operations array; fallback to tasks in devices)
+            const opsArr = Array.isArray(doc.operations) ? doc.operations : [];
+            const totalOps = opsArr.length || (Array.isArray(doc.devices) ? doc.devices.reduce((sum, d)=> sum + ((d.tasks||[]).length), 0) : 0);
+            const completedOps = opsArr.filter(op => typeof op === 'object' && op.status === true).length;
+
+            // Devices count
+            const devicesCount = Array.isArray(doc.devices) ? doc.devices.length : 0;
 
             // Get assigned users
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             let assignedUsersHtml = '';
-
             if (doc.assignedUsers && doc.assignedUsers.length > 0) {
                 const assignedUserNames = doc.assignedUsers.map(userId => {
                     const user = users.find(u => u.id === userId);
                     return user ? `<span class="assigned-user-tag ${user.role}">${user.username}</span>` : '';
-                }).filter(name => name !== '').join('');
-
+                }).filter(Boolean).join('');
                 assignedUsersHtml = assignedUserNames || '<span class="no-assignment">Unassigned</span>';
             } else {
                 assignedUsersHtml = '<span class="no-assignment">Unassigned</span>';
@@ -1286,12 +1294,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             row.innerHTML = `
                 <td>${doc.jobOrder || '-'}</td>
-                <td><strong>${doc.jobOrderId || '-'}</strong></td>
-                <td>${doc.device || '-'}</td>
-                <td>${doc.deviceNo || '-'}</td>
-                <td>${doc.deviceSerialNo || '-'}</td>
-                <td>${doc.assignedTeam || '-'}</td>
-                <td>${doc.supervisor || '-'}</td>
+                <td>${devicesCount}</td>
+                <td>${completedOps}/${totalOps}</td>
                 <td class="assigned-users-cell">${assignedUsersHtml}</td>
                 <td>${date}</td>
                 <td>

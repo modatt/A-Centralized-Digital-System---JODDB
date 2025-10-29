@@ -254,36 +254,65 @@
       const docs = JSON.parse(localStorage.getItem('documents') || '[]');
       const users = JSON.parse(localStorage.getItem('users') || '[]');
       const techById = Object.fromEntries(users.filter(u=>u.role==='technician').map(u => [u.id, u]));
-      const supervisedDocs = docs.filter(d => (d.supervisor || '').toLowerCase() === currentUsername.toLowerCase());
 
       const rows = [];
-      supervisedDocs.forEach(doc => {
+      docs.forEach(doc => {
         (doc.operations || []).forEach((op, idx) => {
           const opObj = typeof op === 'string' ? { description: op } : (op || {});
           const isCompleted = opObj.status === true;
           const pendingApproval = !opObj.approvalStatus;
-          if (isCompleted && pendingApproval) {
-            const techName = doc.lastTechUpdate?.techName || (doc.assignedUsers || []).map(id => techById[id]?.username).filter(Boolean).join(', ') || '-';
-            rows.push(`
-              <tr data-doc-id="${doc.id}" data-op-index="${idx}">
-                <td>${escapeHtml(doc.jobOrder || '-')}</td>
-                <td><strong>${escapeHtml(doc.jobOrderId || doc.serial || '-')}</strong></td>
-                <td>${escapeHtml(doc.device || '-')}</td>
-                <td>${escapeHtml(opObj.description || '-')}</td>
-                <td>${escapeHtml(techName)}</td>
-                <td>${opObj.minTime ?? '-'}</td>
-                <td>${opObj.actualTime ?? '-'}</td>
-                <td>${opObj.minOutput ?? '-'}</td>
-                <td>${opObj.actualOutput ?? '-'}</td>
-                <td class="notes-cell">${escapeHtml(opObj.notes || '-')}</td>
-                <td><textarea class="supervisor-note" rows="2" placeholder="Add note (optional)"></textarea></td>
-                <td>
-                  <button class="action-btn approve-btn">Approve</button>
-                  <button class="action-btn delete reject-btn">Reject</button>
-                </td>
-              </tr>
-            `);
+          if (!isCompleted || !pendingApproval) return;
+
+          // Determine the technician who performed/updated this op
+          let techId = opObj.updatedById || doc?.lastTechUpdate?.techId || null;
+          if (techId != null && typeof techId !== 'number') {
+            const parsed = parseInt(techId);
+            techId = isNaN(parsed) ? null : parsed;
           }
+          if (!techId && Array.isArray(doc.assignedUsers) && doc.assignedUsers.length === 1) {
+            techId = doc.assignedUsers[0];
+          }
+          const tech = techById[techId] || null;
+
+          // Only show if the technician's supervisor matches the current supervisor
+          if (!tech || (tech.supervisor || '').toLowerCase() !== currentUsername.toLowerCase()) return;
+
+          const techName = tech?.username || doc.lastTechUpdate?.techName || '-';
+          // Determine the one device related to this task
+          let deviceName = (opObj.deviceName && String(opObj.deviceName).trim()) || '';
+          if (!deviceName && Array.isArray(doc.devices)) {
+            // Try to infer by matching task description (and assignee if available)
+            const desc = (opObj.description || '').trim();
+            const candidate = doc.devices.find(dev => Array.isArray(dev.tasks) && dev.tasks.some(tsk => {
+              const sameDesc = (tsk?.description || '').trim() === desc;
+              if (!sameDesc) return false;
+              if (techId && tsk?.assignedTo) {
+                const tId = typeof tsk.assignedTo === 'number' ? tsk.assignedTo : parseInt(tsk.assignedTo);
+                return !isNaN(tId) ? (tId === techId) : true;
+              }
+              return true;
+            }));
+            if (candidate && candidate.name) deviceName = candidate.name;
+          }
+          const deviceDisplay = escapeHtml(deviceName || doc.device || '-');
+          rows.push(`
+            <tr data-doc-id="${doc.id}" data-op-index="${idx}">
+              <td>${escapeHtml(doc.jobOrder || '-')}</td>
+              <td>${deviceDisplay}</td>
+              <td>${escapeHtml(opObj.description || '-')}</td>
+              <td>${escapeHtml(techName)}</td>
+              <td>${opObj.minTime ?? '-'}</td>
+              <td>${opObj.actualTime ?? '-'}</td>
+              <td>${opObj.minOutput ?? '-'}</td>
+              <td>${opObj.actualOutput ?? '-'}</td>
+              <td class="notes-cell">${escapeHtml(opObj.notes || '-')}</td>
+              <td><textarea class="supervisor-note" rows="2" placeholder="Add note (optional)"></textarea></td>
+              <td>
+                <button class="action-btn approve-btn">Approve</button>
+                <button class="action-btn delete reject-btn">Reject</button>
+              </td>
+            </tr>
+          `);
         });
       });
 

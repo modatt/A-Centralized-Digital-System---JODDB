@@ -174,10 +174,11 @@
         const created = new Date(doc.createdDate).toLocaleDateString();
         const opsCompleted = (doc.operations || []).filter(op => op && op.status === true).length;
         const opsTotal = (doc.operations || []).length;
+        const deviceNames = Array.isArray(doc.devices) ? doc.devices.map(d => d?.name).filter(Boolean) : [];
+        const devicesDisplay = deviceNames.length ? escapeHtml(deviceNames.join(', ')) : escapeHtml(doc.device || '-');
         tr.innerHTML = `
-          <td>${doc.jobOrder || '-'}</td>
-          <td><strong>${doc.jobOrderId || doc.serial || '-'}</strong></td>
-          <td>${doc.device || '-'}</td>
+          <td>${escapeHtml(doc.jobOrder || '-')}</td>
+          <td>${devicesDisplay}</td>
           <td>${created}</td>
           <td>${opsCompleted}/${opsTotal}</td>
           <td>
@@ -320,7 +321,7 @@
       `;
     }
 
-    function saveOps(){
+  function saveOps(){
       if (currentDocId == null) return;
       const docs = JSON.parse(localStorage.getItem('documents') || '[]');
       const idx = docs.findIndex(d => d.id === currentDocId);
@@ -381,6 +382,10 @@
           return; // skip adding blank new rows
         }
         const opData = { description: desc, minOutput, minTime, actualOutput, actualTime, startTime, endTime, status, notes };
+        // Track who updated this operation for supervisor routing
+        opData.updatedById = myId;
+        opData.updatedByName = currentUsername;
+        opData.updatedAt = new Date().toISOString();
         // Explicitly drop any legacy priority field
         updatedOps.push(opData);
       });
@@ -394,7 +399,7 @@
       };
       localStorage.setItem('documents', JSON.stringify(docs));
 
-      try { addDocumentHistory(currentDocId, 'operation_updated', `Technician ${header.techName || currentUsername} updated operation details`); } catch(e){}
+  try { addDocumentHistory(currentDocId, 'operation_updated', `Technician ${header.techName || currentUsername} updated operation details`); } catch(e){}
 
       modal.style.display = 'none';
       loadAssignedDocs();
