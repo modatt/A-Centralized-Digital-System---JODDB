@@ -208,6 +208,167 @@ document.addEventListener('DOMContentLoaded', function() {
     const documentForm = document.getElementById('documentForm');
     const addOperationBtn = document.getElementById('add-operation-btn');
     const operationsContainer = document.getElementById('operations-container');
+    // Devices/Tasks builder elements
+    const devicesContainer = document.getElementById('devices-container');
+    const addDeviceBtn = document.getElementById('add-device-btn');
+
+    // Team operation presets (planner side). If a shared global exists, use it; otherwise provide defaults.
+    const TEAM_OPERATIONS = (window && window.TEAM_OPERATIONS) ? window.TEAM_OPERATIONS : {
+        production: [
+            'Assemblage I','Assemblage II','Assemblage II tubeless','Final Touch - Cleaning&Packing','Final Touch - Paint&Labeling','Final Touch - Purge Vulve&Cleaning','FocusA340','FocusA360','Lens Cleaning','Objective and Doublet','Nitrogen','Sub-Assemblies','Battery Contact Assy.','Battery Cover Assy.','Beam Combiner Assy.','Cover Assy.','Eyepiece Assy.','Focus Assy.A340','Focus Assy.A360','Reticle Assy.','Tube Assy.','Troubleshooting','Adaptors Installation','Add Tube Spacers','Adjust the Fiber Optic','Adjusters','Attaching Label','Bushing Installation','Change Battery contact','Change Beam','Change Eye Piece','Change Power Card','Change Reticle','Change Reticle-Assy.II','Clean the Reticle','Clean Assemblage 1','Clean Assemblage 2','Contact Battery Installation','Cover Assembly Only','Cover Lacing','Cover lacing and macaroon','Cover Silicon','Dirt on Beam-Assy.I','Dirt on Beam-Assy.II','Dirt on Eye Piece','Dirt on Objective Lens','Dirt on Tube','Dirt on Tube- Air blow gun','Disassemble Assemblage I','Epoxy on Blue Wire','ESD Line Test'
+        ],
+        tester: ['Adjustment','Unit Test','Immersion'],
+        quality: ['Quality Assemblage I','Quality Assemblage II','Final inspection','Packing'],
+        _all: []
+    };
+
+    function getTechniciansByTeam(team) {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        return users.filter(u => u.role === 'technician' && (u.team || '') === (team || ''));
+    }
+
+    function renderTaskRow(team, task = {}) {
+        const ops = Array.from(new Set(((TEAM_OPERATIONS[team]?.length ? TEAM_OPERATIONS[team] : TEAM_OPERATIONS._all) || []).filter(Boolean)));
+        const opOptions = ['<option value="">Select operation</option>']
+            .concat(ops.map(o => `<option value="${escapeHtml(o)}" ${task.description===o ? 'selected' : ''}>${escapeHtml(o)}</option>`))
+            .concat([`<option value="__other__" ${task.description && !ops.includes(task.description) ? 'selected' : ''}>Other...</option>`])
+            .join('');
+        const otherValue = task.description && !ops.includes(task.description) ? escapeHtml(task.description) : '';
+        const otherStyle = otherValue ? '' : 'display:none;';
+        const techs = getTechniciansByTeam(team);
+        const techOptions = ['<option value="">Unassigned</option>']
+            .concat(techs.map(t => `<option value="${t.id}" ${String(task.assignedTo||'')===String(t.id) ? 'selected' : ''}>${escapeHtml(t.username)}</option>`))
+            .join('');
+        return `
+            <div class="task-row">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Task</label>
+                        <select class="task-operation">${opOptions}</select>
+                    </div>
+                    <div class="form-col">
+                        <label>Other</label>
+                        <input type="text" class="task-other" placeholder="Describe custom task" value="${otherValue}" style="${otherStyle}">
+                    </div>
+                    <div class="form-col">
+                        <label>Assign Technician</label>
+                        <select class="task-assignee">${techOptions}</select>
+                    </div>
+                    <div class="form-col form-col-actions">
+                        <button type="button" class="btn btn-small btn-danger remove-task">Remove</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function attachTaskRowHandlers(deviceEl) {
+        // Toggle other input visibility
+        deviceEl.querySelectorAll('.task-operation').forEach(sel => {
+            sel.addEventListener('change', function(){
+                const row = this.closest('.task-row');
+                const other = row.querySelector('.task-other');
+                other.style.display = (this.value === '__other__') ? '' : 'none';
+                if (this.value === '__other__') other.focus();
+            });
+        });
+        // Remove task
+        deviceEl.querySelectorAll('.remove-task').forEach(btn => {
+            btn.addEventListener('click', function(){
+                const row = this.closest('.task-row');
+                row?.remove();
+            });
+        });
+    }
+
+    function renderDeviceBlock(initial = {}) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'device-item';
+        const name = initial.name || '';
+        const serial = initial.serial || '';
+        const team = (initial.team || '').toLowerCase();
+        const teamOptions = ['<option value="">Select team</option>','quality','tester','production']
+            .map(t => typeof t === 'string' && t.includes('option')
+                ? t
+                : `<option value="${t}" ${team===t ? 'selected' : ''}>${t}</option>`).join('');
+        wrapper.innerHTML = `
+            <div class="device-header">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>Device Name</label>
+                        <input type="text" class="device-name" placeholder="e.g., Microscope A" value="${escapeHtml(name)}" />
+                    </div>
+                    <div class="form-col">
+                        <label>Device Serial</label>
+                        <input type="text" class="device-serial" placeholder="e.g., SN-12345" value="${escapeHtml(serial)}" />
+                    </div>
+                    <div class="form-col">
+                        <label>Team</label>
+                        <select class="device-team">${teamOptions}</select>
+                    </div>
+                    <div class="form-col form-col-actions">
+                        <button type="button" class="btn btn-small btn-danger remove-device">Remove Device</button>
+                    </div>
+                </div>
+            </div>
+            <div class="device-tasks">
+                <div class="tasks-container"></div>
+                <button type="button" class="btn btn-small btn-secondary add-task">Add Task</button>
+            </div>
+        `;
+
+        // Insert any initial tasks
+        const tasksContainerEl = wrapper.querySelector('.tasks-container');
+        const seedTasks = Array.isArray(initial.tasks) ? initial.tasks : [];
+        seedTasks.forEach(t => {
+            tasksContainerEl.insertAdjacentHTML('beforeend', renderTaskRow(team, t));
+        });
+        attachTaskRowHandlers(wrapper);
+
+        // Handlers
+        wrapper.querySelector('.remove-device').addEventListener('click', () => wrapper.remove());
+        wrapper.querySelector('.add-task').addEventListener('click', () => {
+            const currTeam = (wrapper.querySelector('.device-team')?.value || '').toLowerCase();
+            tasksContainerEl.insertAdjacentHTML('beforeend', renderTaskRow(currTeam));
+            attachTaskRowHandlers(wrapper);
+        });
+        wrapper.querySelector('.device-team').addEventListener('change', function(){
+            const newTeam = (this.value || '').toLowerCase();
+            // Re-render existing task rows to reflect new team options and assignees
+            const currentTasks = Array.from(wrapper.querySelectorAll('.task-row')).map(row => {
+                const sel = row.querySelector('.task-operation');
+                const other = row.querySelector('.task-other');
+                const assignee = row.querySelector('.task-assignee');
+                const desc = sel.value === '__other__' ? (other.value || '') : sel.value;
+                return { description: desc, assignedTo: assignee.value ? parseInt(assignee.value) : null };
+            });
+            tasksContainerEl.innerHTML = '';
+            currentTasks.forEach(t => tasksContainerEl.insertAdjacentHTML('beforeend', renderTaskRow(newTeam, t)));
+            attachTaskRowHandlers(wrapper);
+        });
+
+        return wrapper;
+    }
+
+    function collectDevicesFromForm() {
+        if (!devicesContainer) return [];
+        const items = Array.from(devicesContainer.querySelectorAll('.device-item'));
+        return items.map(item => {
+            const name = (item.querySelector('.device-name')?.value || '').trim();
+            const serial = (item.querySelector('.device-serial')?.value || '').trim();
+            const team = (item.querySelector('.device-team')?.value || '').trim();
+            const taskRows = Array.from(item.querySelectorAll('.task-row'));
+            const tasks = taskRows.map(row => {
+                const sel = row.querySelector('.task-operation');
+                const other = row.querySelector('.task-other');
+                const assignee = row.querySelector('.task-assignee');
+                const desc = sel.value === '__other__' ? (other.value || '').trim() : (sel.value || '').trim();
+                const assignedTo = assignee.value ? parseInt(assignee.value) : null;
+                return { description: desc, assignedTo };
+            }).filter(t => t.description);
+            return { name, serial, team, tasks };
+        }).filter(d => d.name || d.serial || d.tasks.length);
+    }
 
     addDocumentBtn.addEventListener('click', function() {
         documentFormContainer.style.display = 'block';
@@ -272,6 +433,10 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             attachOperationListeners();
         }
+        // Reset devices builder
+        if (devicesContainer) {
+            devicesContainer.innerHTML = '';
+        }
     });
 
     cancelDocumentBtn.addEventListener('click', function() {
@@ -333,6 +498,14 @@ document.addEventListener('DOMContentLoaded', function() {
         operationsContainer.appendChild(operationItem);
         attachOperationListeners();
     });
+
+    // Devices builder button
+    if (addDeviceBtn && devicesContainer) {
+        addDeviceBtn.addEventListener('click', function(){
+            const block = renderDeviceBlock();
+            devicesContainer.appendChild(block);
+        });
+    }
 
     function attachOperationListeners() {
         if (!operationsContainer) return;
@@ -630,35 +803,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const supervisor = (document.getElementById('doc-supervisor-select')?.value || '').trim();
         const assignedUserIds = getSelectedUserIds();
 
-        // Collect operations with all details
+        // Collect operations from legacy operations UI (if present)
         const operationItems = document.querySelectorAll('.operation-item');
-        const operations = [];
+        let operations = [];
+        if (operationItems && operationItems.length) {
+            operationItems.forEach(item => {
+                const description = item.querySelector('.operation-input').value.trim();
+                if (description) {
+                    const minOutput = parseFloat(item.querySelector('.min-output').value) || 0;
+                    const minTime = parseFloat(item.querySelector('.min-time').value) || 0;
+                    const actualOutput = parseFloat(item.querySelector('.actual-output').value) || 0;
+                    const actualTime = parseFloat(item.querySelector('.actual-time').value) || 0;
+                    const status = item.querySelector('.operation-status').value;
+                    const notes = item.querySelector('.operation-notes').value.trim();
+                    operations.push({ description, minOutput, minTime, actualOutput, actualTime, status: status === 'true' ? true : status === 'false' ? false : null, notes });
+                }
+            });
+        }
 
-        operationItems.forEach(item => {
-            const description = item.querySelector('.operation-input').value.trim();
-            if (description) {
-                const minOutput = parseFloat(item.querySelector('.min-output').value) || 0;
-                const minTime = parseFloat(item.querySelector('.min-time').value) || 0;
-                const actualOutput = parseFloat(item.querySelector('.actual-output').value) || 0;
-                const actualTime = parseFloat(item.querySelector('.actual-time').value) || 0;
-                const status = item.querySelector('.operation-status').value;
-                const notes = item.querySelector('.operation-notes').value.trim();
-
-                operations.push({
-                    description: description,
-                    minOutput: minOutput,
-                    minTime: minTime,
-                    actualOutput: actualOutput,
-                    actualTime: actualTime,
-                    status: status === 'true' ? true : status === 'false' ? false : null,
-                    notes: notes
+        // Collect devices and flatten tasks to operations
+        const devices = collectDevicesFromForm();
+        if (devices.length) {
+            // Flatten tasks into operations
+            const taskOps = [];
+            devices.forEach(d => {
+                (d.tasks || []).forEach(t => {
+                    if (!t.description) return;
+                    taskOps.push({ description: t.description, minOutput: 0, minTime: 0, actualOutput: 0, actualTime: 0, status: null, notes: '' });
                 });
-            }
-        });
+            });
+            // If legacy operations UI also used, keep both; else use taskOps
+            operations = operations.length ? operations.concat(taskOps) : taskOps;
+        }
 
-        const documents = JSON.parse(localStorage.getItem('documents'));
+    const documents = JSON.parse(localStorage.getItem('documents'));
         const submitBtn = this.querySelector('button[type="submit"]');
         const editingId = submitBtn.dataset.editing;
+
+    // Merge assigned users from checklist and per-task assignees
+    let mergedAssignedUserIds = Array.isArray(assignedUserIds) ? [...assignedUserIds] : [];
+    devices.forEach(d => (d.tasks || []).forEach(t => { if (t.assignedTo && !mergedAssignedUserIds.includes(t.assignedTo)) mergedAssignedUserIds.push(t.assignedTo); }));
 
         if (editingId) {
             // Update existing document
@@ -679,8 +863,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     deviceSerialNo,
                     assignedTeam,
                     supervisor,
+                    devices,
                     operations: operations,
-                    assignedUsers: assignedUserIds,
+                    assignedUsers: mergedAssignedUserIds,
                     lastModified: new Date().toISOString()
                 };
 
@@ -716,8 +901,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 deviceSerialNo,
                 assignedTeam,
                 supervisor,
+                devices,
                 operations: operations,
-                assignedUsers: assignedUserIds,
+                assignedUsers: mergedAssignedUserIds,
                 createdDate: new Date().toISOString()
             };
             documents.push(newDocument);
@@ -1265,6 +1451,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 attachOperationListeners();
             }
 
+            // Populate devices builder
+            if (devicesContainer) {
+                devicesContainer.innerHTML = '';
+                const devs = Array.isArray(doc.devices) ? doc.devices : [];
+                devs.forEach(d => {
+                    const block = renderDeviceBlock(d);
+                    devicesContainer.appendChild(block);
+                });
+            }
+
             // Populate users checklist and set selected users
             populateUsersChecklist();
             if (doc.assignedUsers && Array.isArray(doc.assignedUsers)) {
@@ -1386,6 +1582,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 assignedUsersInfo = '<span class="no-assignment">No users assigned</span>';
             }
 
+            // Build Devices markup (if any)
+            const userById = (id) => users.find(u => u.id === id);
+            const devicesHtml = Array.isArray(doc.devices) && doc.devices.length ? `
+                <div class="devices-section">
+                    <h3>🧰 Devices & Tasks</h3>
+                    ${doc.devices.map((d, di) => `
+                        <div class="device-view-item">
+                            <div><strong>Device ${di+1}:</strong> ${escapeHtml(d.name || '-')}</div>
+                            <div><strong>Serial:</strong> ${escapeHtml(d.serial || '-')} &nbsp; <strong>Team:</strong> ${escapeHtml(d.team || '-')}</div>
+                            ${(Array.isArray(d.tasks) && d.tasks.length) ? (`
+                                <div class="device-tasks-view">
+                                    <div><em>Tasks:</em></div>
+                                    <ul>
+                                        ${d.tasks.map(t => `<li>${escapeHtml(t.description || '-')}${t.assignedTo ? ` — <span class="assigned-user-tag technician">${escapeHtml(userById(t.assignedTo)?.username || 'Unknown')}</span>` : ''}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            `) : '<div><em>No tasks</em></div>'}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+
             modalBody.innerHTML = `
                 <div class="document-info">
                     <div class="info-grid">
@@ -1422,7 +1640,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span>${new Date(doc.createdDate).toLocaleString()}</span>
                         </div>
                         <div class="info-item full-width">
-                            <strong>� Assigned Technicians:</strong>
+                            <strong>👷 Assigned Technicians:</strong>
                             <div class="assigned-users-display">
                                 ${assignedUsersInfo}
                             </div>
@@ -1435,6 +1653,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${generateDocumentHistory(doc)}
                     </div>
                 </div>
+                ${devicesHtml}
                 <div class="time-metrics">
                     <h3>📊 Time Analysis & Performance Metrics</h3>
                     <div class="metrics-grid">
