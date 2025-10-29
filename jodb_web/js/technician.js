@@ -1,6 +1,24 @@
 // Technician dashboard logic
 (function(){
   document.addEventListener('DOMContentLoaded', function() {
+    // Remove any legacy priority fields from stored documents
+    try {
+      const docs = JSON.parse(localStorage.getItem('documents') || '[]');
+      let changed = false;
+      docs.forEach(d => {
+        if (Array.isArray(d.operations)) {
+          d.operations = d.operations.map(o => {
+            if (o && typeof o === 'object' && 'priority' in o) {
+              const { priority, ...rest } = o;
+              changed = true;
+              return rest;
+            }
+            return o;
+          });
+        }
+      });
+      if (changed) localStorage.setItem('documents', JSON.stringify(docs));
+    } catch (_) {}
     // Auth guard
     if (localStorage.getItem('isLoggedIn') !== 'true') {
       window.location.href = 'index.html';
@@ -94,6 +112,7 @@
 
     function loadAssignedSummary(){
       const body = document.getElementById('assigned-summary-body');
+      if (!body) return; // Section not present
       const docs = JSON.parse(localStorage.getItem('documents') || '[]');
       const assigned = myId ? docs.filter(d => Array.isArray(d.assignedUsers) && d.assignedUsers.includes(myId)) : [];
       body.innerHTML = assigned.map(d => `
@@ -155,7 +174,7 @@
       const tbody = document.getElementById('tech-ops-tbody');
       if (tbody) {
         if (ops.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No operations defined for this document.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No operations defined for this document.</td></tr>';
         } else {
           tbody.innerHTML = ops.map((op, idx) => renderOpRow(op, idx)).join('');
         }
@@ -200,7 +219,6 @@
               <option value="false" ${statusVal==='false' ? 'selected' : ''}>Not Completed</option>
             </select>
           </td>
-          <td>${op.priority ?? '-'}</td>
           <td><textarea rows="2" class="tech-notes">${escapeHtml(op.notes || '')}</textarea></td>
         </tr>
       `;
@@ -261,13 +279,14 @@
         const statusRaw = row.querySelector('.tech-status').value;
         const status = statusRaw === 'true' ? true : statusRaw === 'false' ? false : null;
         const notes = row.querySelector('.tech-notes').value.trim();
-        const priority = typeof opOrig === 'object' ? (opOrig.priority ?? null) : null;
         // If this is a newly added row with no description, skip it
         const isNewRow = !(docs[idx].operations || [])[i];
         if (!desc && isNewRow) {
           return; // skip adding blank new rows
         }
-        updatedOps.push({ description: desc, minOutput, minTime, actualOutput, actualTime, startTime, endTime, status, priority, notes });
+        const opData = { description: desc, minOutput, minTime, actualOutput, actualTime, startTime, endTime, status, notes };
+        // Explicitly drop any legacy priority field
+        updatedOps.push(opData);
       });
 
       const oldDoc = { ...docs[idx] };
@@ -344,6 +363,8 @@
 
     // Initial load
     loadAssignedDocs();
-    loadAssignedSummary();
+    if (document.getElementById('assigned-summary-body')) {
+      loadAssignedSummary();
+    }
   });
 })();

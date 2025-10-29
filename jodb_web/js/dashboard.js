@@ -206,10 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <option value="false">Not Completed</option>
                                 </select>
                             </div>
-                            <div class="form-col">
-                                <label>number of operation</label>
-                                <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
-                            </div>
                         </div>
                         <div class="form-row">
                             <div class="form-col">
@@ -270,10 +266,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="true">Completed</option>
                             <option value="false">Not Completed</option>
                         </select>
-                    </div>
-                    <div class="form-col">
-                        <label>number of operation</label>
-                        <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1">
                     </div>
                 </div>
                 <div class="form-row">
@@ -596,7 +588,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const actualOutput = parseFloat(item.querySelector('.actual-output').value) || 0;
                 const actualTime = parseFloat(item.querySelector('.actual-time').value) || 0;
                 const status = item.querySelector('.operation-status').value;
-                const priority = parseInt(item.querySelector('.operation-priority').value) || null;
                 const notes = item.querySelector('.operation-notes').value.trim();
 
                 operations.push({
@@ -606,7 +597,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     actualOutput: actualOutput,
                     actualTime: actualTime,
                     status: status === 'true' ? true : status === 'false' ? false : null,
-                    priority: priority,
                     notes: notes
                 });
             }
@@ -1161,7 +1151,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const actualOutput = typeof op === 'object' ? op.actualOutput || '' : '';
                     const actualTime = typeof op === 'object' ? op.actualTime || '' : '';
                     const status = typeof op === 'object' ? op.status : '';
-                    const priority = typeof op === 'object' ? op.priority || '' : '';
                     const notes = typeof op === 'object' ? op.notes || '' : '';
 
                     operationItem.innerHTML = `
@@ -1199,10 +1188,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <option value="false" ${status === false ? 'selected' : ''}>Not Completed</option>
                                     </select>
                                 </div>
-                                <div class="form-col">
-                                    <label>number of operation</label>
-                                    <input type="number" class="operation-priority" placeholder="operation (1-150)" min="1" max="150" step="1" value="${priority}">
-                                </div>
+
                             </div>
                             <div class="form-row">
                                 <div class="form-col">
@@ -1302,7 +1288,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>
-                            <td>-</td>
                         </tr>
                     `;
                 } else {
@@ -1319,7 +1304,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td>${op.actualOutput || '-'}</td>
                             <td>${op.actualTime || '-'}</td>
                             <td><span class="${statusClass}">${statusText}</span></td>
-                            <td>${op.priority || '-'}</td>
                             <td class="notes-cell">${op.notes || '-'}</td>
                         </tr>
                     `;
@@ -1448,7 +1432,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <th>Actual Output</th>
                                     <th>Actual Time (hrs)</th>
                                     <th>Status</th>
-                                    <th>Priority</th>
                                     <th>Notes</th>
                                 </tr>
                             </thead>

@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 105,
                         actualTime: 3.5,
                         status: true,
-                        priority: 1,
                         notes: 'Completed ahead of schedule with better output'
                     },
                     {
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 48,
                         actualTime: 2.5,
                         status: true,
-                        priority: 2,
                         notes: 'Minor adjustments needed, took extra time'
                     },
                     {
@@ -42,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 0,
                         actualTime: 0,
                         status: false,
-                        priority: 3,
                         notes: 'Pending - waiting for equipment parts'
                     },
                     {
@@ -52,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 0,
                         actualTime: 0,
                         status: false,
-                        priority: 4,
                         notes: 'Not started yet'
                     }
                 ]
@@ -73,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 12,
                         actualTime: 5.5,
                         status: true,
-                        priority: 1,
                         notes: 'Protocols exceed requirements and completed efficiently'
                     },
                     {
@@ -83,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 22,
                         actualTime: 9.0,
                         status: true,
-                        priority: 2,
                         notes: 'Training completed, extra time for hands-on practice'
                     },
                     {
@@ -93,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 3,
                         actualTime: 6.0,
                         status: false,
-                        priority: 3,
                         notes: 'Installation in progress, facing technical difficulties'
                     },
                     {
@@ -103,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 0,
                         actualTime: 0,
                         status: false,
-                        priority: 4,
                         notes: 'Waiting for equipment installation completion'
                     }
                 ]
@@ -124,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 35,
                         actualTime: 8.0,
                         status: true,
-                        priority: 1,
                         notes: 'Analysis completed efficiently with excellent results'
                     },
                     {
@@ -134,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 18,
                         actualTime: 7.5,
                         status: true,
-                        priority: 2,
                         notes: 'Schedule developed with additional contingency plans'
                     },
                     {
@@ -144,7 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 0,
                         actualTime: 0,
                         status: false,
-                        priority: 3,
                         notes: 'Scheduled for next week'
                     }
                 ]
@@ -165,7 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 28,
                         actualTime: 14.0,
                         status: true,
-                        priority: 1,
                         notes: 'Comprehensive audit completed, identified multiple optimization areas'
                     },
                     {
@@ -175,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 95,
                         actualTime: 18.0,
                         status: true,
-                        priority: 2,
                         notes: 'Installation complete, minor issues with some fixtures'
                     },
                     {
@@ -185,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 30,
                         actualTime: 25.0,
                         status: false,
-                        priority: 3,
                         notes: 'In progress - more complex than anticipated'
                     },
                     {
@@ -195,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 0,
                         actualTime: 0,
                         status: false,
-                        priority: 4,
                         notes: 'Equipment ordered, installation pending'
                     },
                     {
@@ -205,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         actualOutput: 0,
                         actualTime: 0,
                         status: false,
-                        priority: 5,
                         notes: 'Training materials being developed'
                     }
                 ]
@@ -218,6 +202,16 @@ document.addEventListener('DOMContentLoaded', function() {
         let updated = false;
         documents.forEach(d => {
             if (!d.supervisor) { d.supervisor = 'sarah_supervisor'; updated = true; }
+            if (Array.isArray(d.operations)) {
+                d.operations = d.operations.map(o => {
+                    if (o && typeof o === 'object' && 'priority' in o) {
+                        const { priority, ...rest } = o;
+                        updated = true;
+                        return rest;
+                    }
+                    return o;
+                });
+            }
         });
         if (updated) localStorage.setItem('documents', JSON.stringify(documents));
     }

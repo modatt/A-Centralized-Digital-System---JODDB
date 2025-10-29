@@ -485,6 +485,7 @@ tbody tr:hover {
     max-width: 1200px;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: auto; /* Allow horizontal scroll for wide tables in modal */
 }
 
 .close {
@@ -583,20 +584,6 @@ tbody tr:hover {
     color: var(--warning-color);
 }
 
-.priority-1, .priority-2, .priority-3 {
-    color: var(--success-color);
-    font-weight: 600;
-}
-
-.priority-4, .priority-5, .priority-6, .priority-7 {
-    color: var(--warning-color);
-    font-weight: 600;
-}
-
-.priority-8, .priority-9, .priority-10 {
-    color: var(--danger-color);
-    font-weight: 600;
-}
 
 .notes-row {
     flex-direction: column;
@@ -614,9 +601,7 @@ tbody tr:hover {
     color: var(--text-secondary);
 }
 
-.operation-priority {
-    background-color: var(--card-background);
-}
+/* priority UI removed */
 
 .operation-notes {
     background-color: var(--card-background);
@@ -641,45 +626,45 @@ tbody tr:hover {
         height: auto;
         position: relative;
     }
-    
+
     .main-content {
         margin-left: 0;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .section-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .section-header .btn {
         width: 100%;
     }
-    
+
     .top-bar {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
         text-align: left;
     }
-    
+
     .top-bar .user-info {
         align-self: flex-end;
         text-align: right;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
-    
+
     .form-actions .btn {
         width: 100%;
     }
-    
+
     .table-container {
         overflow-x: scroll;
     }
@@ -749,7 +734,8 @@ tbody tr:hover {
 .table-wrapper {
     background-color: var(--card-background);
     border-radius: 8px;
-    overflow: hidden;
+    overflow-x: auto; /* Enable horizontal scroll if table is wider than container */
+    overflow-y: hidden;
     border: 1px solid var(--border-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -758,6 +744,7 @@ tbody tr:hover {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9em;
+    min-width: 1000px; /* Ensure columns don't squish; allow horizontal scroll */
 }
 
 .operations-table th {
@@ -794,6 +781,18 @@ tbody tr:hover {
 
 .operations-table tbody tr:nth-child(even) {
     background-color: #f8fafc;
+}
+
+/* Inputs inside operations table */
+.operations-table input,
+.operations-table select,
+.operations-table textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.85em;
+    background: var(--card-background);
 }
 
 .notes-cell {
@@ -1541,57 +1540,57 @@ tbody tr:hover {
     .info-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .table-wrapper {
         overflow-x: auto;
     }
-    
+
     .operations-table {
         min-width: 800px;
     }
-    
+
     .operations-table th,
     .operations-table td {
         padding: 8px 6px;
         font-size: 0.8em;
     }
-    
+
     .metrics-grid {
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: 12px;
     }
-    
+
     .metric-card {
         padding: 12px;
     }
-    
+
     .metric-value {
         font-size: 1.4rem;
     }
-    
+
     .time-metrics {
         padding: 16px;
         margin: 16px 0;
     }
-    
+
     .dashboard-header {
         flex-direction: column;
         gap: 16px;
         text-align: center;
     }
-    
+
     .kpi-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .analytics-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .quick-stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .status-grid {
         grid-template-columns: repeat(2, 1fr);
     }
