@@ -226,6 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 password: 'password123',
                 email: 'john.doe@company.com',
                 role: 'technician',
+                team: 'quality',
+                supervisor: 'sarah_supervisor',
                 createdDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
             },
             {
@@ -234,6 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 password: 'password123',
                 email: 'sarah.manager@company.com',
                 role: 'supervisor',
+                team: 'quality',
                 createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
             },
             {
@@ -242,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 password: 'password123',
                 email: 'mike.tech@company.com',
                 role: 'technician',
+                team: 'production',
                 createdDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
             }
         ];

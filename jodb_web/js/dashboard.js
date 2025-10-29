@@ -72,6 +72,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const userFormContainer = document.getElementById('user-form-container');
     const cancelUserBtn = document.getElementById('cancel-user-btn');
     const userForm = document.getElementById('userForm');
+    const roleSelect = document.getElementById('user-role');
+    const teamSelect = document.getElementById('user-team');
+    const supervisorGroup = document.getElementById('user-supervisor-group');
+    const supervisorSelect = document.getElementById('user-supervisor');
+
+    function populateSupervisorOptions(team, selectedSupervisor = '') {
+        if (!supervisorSelect) return;
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const supervisors = users.filter(u => u.role === 'supervisor' && (u.team || '') === (team || ''));
+        if (!team) {
+            supervisorSelect.innerHTML = '<option value="">Select team first</option>';
+            supervisorSelect.disabled = true;
+            return;
+        }
+        if (supervisors.length === 0) {
+            supervisorSelect.innerHTML = '<option value="">No supervisors for this team</option>';
+            supervisorSelect.disabled = true;
+            return;
+        }
+        supervisorSelect.disabled = false;
+        const options = ['<option value="">Select supervisor</option>']
+            .concat(supervisors.map(u => `<option value="${escapeHtml(u.username)}" ${u.username===selectedSupervisor ? 'selected' : ''}>${escapeHtml(u.username)}</option>`));
+        supervisorSelect.innerHTML = options.join('');
+        if (selectedSupervisor && !supervisors.some(u => u.username === selectedSupervisor)) {
+            // Ensure existing value stays visible in edit even if no longer matches
+            const opt = document.createElement('option');
+            opt.value = selectedSupervisor;
+            opt.textContent = selectedSupervisor;
+            supervisorSelect.prepend(opt);
+            supervisorSelect.value = selectedSupervisor;
+        }
+    }
+
+    function updateSupervisorVisibility() {
+        const role = roleSelect?.value || '';
+        const team = teamSelect?.value || '';
+        if (role === 'technician') {
+            supervisorGroup.style.display = '';
+            populateSupervisorOptions(team);
+        } else {
+            supervisorGroup.style.display = 'none';
+            if (supervisorSelect) supervisorSelect.value = '';
+        }
+    }
 
     addUserBtn.addEventListener('click', function() {
         userFormContainer.style.display = 'block';
@@ -80,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = userForm.querySelector('button[type="submit"]');
         submitBtn.textContent = 'Create User';
         delete submitBtn.dataset.editing;
+        updateSupervisorVisibility();
     });
 
     cancelUserBtn.addEventListener('click', function() {
@@ -89,6 +134,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = userForm.querySelector('button[type="submit"]');
         submitBtn.textContent = 'Create User';
         delete submitBtn.dataset.editing;
+        updateSupervisorVisibility();
+    });
+
+    roleSelect?.addEventListener('change', updateSupervisorVisibility);
+    teamSelect?.addEventListener('change', function(){
+        if (roleSelect?.value === 'technician') populateSupervisorOptions(teamSelect.value, supervisorSelect?.value || '');
     });
 
     userForm.addEventListener('submit', function(e) {
@@ -97,8 +148,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = document.getElementById('user-username').value;
         const password = document.getElementById('user-password').value;
         const email = document.getElementById('user-email').value;
-        const role = document.getElementById('user-role').value;
-        const team = (document.getElementById('user-team')?.value || '').trim();
+    const role = document.getElementById('user-role').value;
+    const team = (document.getElementById('user-team')?.value || '').trim();
+    const supervisor = role === 'technician' ? ((document.getElementById('user-supervisor')?.value || '').trim()) : '';
 
         const users = JSON.parse(localStorage.getItem('users'));
         const submitBtn = this.querySelector('button[type="submit"]');
@@ -114,7 +166,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     password: password,
                     email: email,
                     role: role,
-                    team: team
+                    team: team,
+                    supervisor: role === 'technician' ? supervisor : ''
                 };
                 alert('User updated successfully!');
             }
@@ -127,6 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 email: email,
                 role: role,
                 team: team,
+                supervisor: role === 'technician' ? supervisor : '',
                 createdDate: new Date().toISOString()
             };
             users.push(newUser);
@@ -1001,6 +1055,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${user.email}</td>
                 <td><span class="badge ${roleClass}">${user.role}</span></td>
                 <td>${user.team || '-'}</td>
+                <td>${user.role === 'technician' ? (user.supervisor || '-') : '-'}</td>
                 <td>${date}</td>
                 <td>
                     <button class="action-btn edit" onclick="editUser(${user.id})">Edit</button>
@@ -1076,6 +1131,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('user-role').value = user.role;
             const teamSelect = document.getElementById('user-team');
             if (teamSelect) teamSelect.value = user.team || '';
+            updateSupervisorVisibility();
+            if (user.role === 'technician') {
+                populateSupervisorOptions(user.team || '', user.supervisor || '');
+                const supSel = document.getElementById('user-supervisor');
+                if (supSel) supSel.value = user.supervisor || '';
+            }
 
             // Show form and change button text
             userFormContainer.style.display = 'block';
