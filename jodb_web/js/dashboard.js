@@ -164,6 +164,10 @@ document.addEventListener('DOMContentLoaded', function() {
         delete submitBtn.dataset.editing;
         // Populate users checklist
         populateUsersChecklist();
+        // Populate supervisors dropdown
+        if (typeof populateSupervisorSelect === 'function') {
+            populateSupervisorSelect();
+        }
         // Reset operations to one input (only if operations UI is present)
         if (operationsContainer) {
             operationsContainer.innerHTML = `
@@ -576,8 +580,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const device = (document.getElementById('doc-device')?.value || '').trim();
         const deviceNo = (document.getElementById('doc-device-no')?.value || '').trim();
         const deviceSerialNo = (document.getElementById('doc-device-serial')?.value || '').trim();
-        const assignedTeam = (document.getElementById('doc-assigned-team')?.value || '').trim();
-        const supervisor = (document.getElementById('doc-supervisor')?.value || '').trim();
+    const assignedTeam = (document.getElementById('doc-assigned-team')?.value || '').trim();
+    const supervisor = (document.getElementById('doc-supervisor-select')?.value || '').trim();
         const assignedUserIds = getSelectedUserIds();
 
         // Collect operations with all details
@@ -699,6 +703,37 @@ document.addEventListener('DOMContentLoaded', function() {
         loadDocuments();
         loadOverview();
     });
+
+    // Populate supervisor dropdown with users having role 'supervisor'
+    function populateSupervisorSelect(selectedSupervisor = '') {
+        const select = document.getElementById('doc-supervisor-select');
+        if (!select) return;
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const supervisors = users.filter(u => u.role === 'supervisor');
+        if (supervisors.length === 0) {
+            select.innerHTML = '<option value="">No supervisors available</option>';
+            return;
+        }
+        const options = ['<option value="">Select supervisor</option>']
+            .concat(supervisors.map(u => `<option value="${escapeHtml(u.username)}" ${u.username===selectedSupervisor ? 'selected' : ''}>${escapeHtml(u.username)}</option>`));
+        select.innerHTML = options.join('');
+        if (selectedSupervisor && !supervisors.some(u => u.username === selectedSupervisor)) {
+            const opt = document.createElement('option');
+            opt.value = selectedSupervisor;
+            opt.textContent = selectedSupervisor;
+            select.prepend(opt);
+            select.value = selectedSupervisor;
+        }
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     // Dashboard Analytics Functions
     let dashboardInterval;
@@ -1090,14 +1125,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const deviceNoInput = document.getElementById('doc-device-no');
             const deviceSerialInput = document.getElementById('doc-device-serial');
             const assignedTeamInput = document.getElementById('doc-assigned-team');
-            const supervisorInput = document.getElementById('doc-supervisor');
+            const supervisorSelect = document.getElementById('doc-supervisor-select');
             if (joInput) joInput.value = doc.jobOrder || '';
             if (joiInput) joiInput.value = doc.jobOrderId || '';
             if (deviceInput) deviceInput.value = doc.device || '';
             if (deviceNoInput) deviceNoInput.value = doc.deviceNo || '';
             if (deviceSerialInput) deviceSerialInput.value = doc.deviceSerialNo || '';
             if (assignedTeamInput) assignedTeamInput.value = doc.assignedTeam || '';
-            if (supervisorInput) supervisorInput.value = doc.supervisor || '';
+            // Populate supervisor dropdown and set selection
+            if (typeof populateSupervisorSelect === 'function') {
+                populateSupervisorSelect(doc.supervisor || '');
+            }
+            if (supervisorSelect && doc.supervisor) {
+                const exists = Array.from(supervisorSelect.options).some(o => o.value === doc.supervisor);
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = doc.supervisor;
+                    opt.textContent = doc.supervisor;
+                    supervisorSelect.prepend(opt);
+                }
+                supervisorSelect.value = doc.supervisor;
+            }
 
             // Populate operations
             if (operationsContainer) {

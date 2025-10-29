@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check if we need to create sample data for testing
     const documents = JSON.parse(localStorage.getItem('documents') || '[]');
-    
+
     // Create sample documents with realistic time data if none exist
     if (documents.length === 0) {
         const sampleDocuments = [
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Production Line Assembly',
                 description: 'Complete assembly line setup and optimization project',
                 createdDate: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+                supervisor: 'sarah_supervisor',
                 assignedUsers: [1, 3], // john_tech and mike_tech
                 operations: [
                     {
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Quality Control Implementation',
                 description: 'Implement comprehensive quality control system',
                 createdDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+                supervisor: 'sarah_supervisor',
                 assignedUsers: [1], // john_tech (only technicians)
                 operations: [
                     {
@@ -112,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Maintenance Schedule Optimization',
                 description: 'Optimize equipment maintenance schedules for maximum efficiency',
                 createdDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                supervisor: 'sarah_supervisor',
                 assignedUsers: [1, 3], // john_tech and mike_tech (only technicians)
                 operations: [
                     {
@@ -152,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: 'Energy Efficiency Project',
                 description: 'Comprehensive energy reduction initiative - target 20% reduction',
                 createdDate: new Date().toISOString(),
+                supervisor: 'sarah_supervisor',
                 assignedUsers: [1, 3], // All technicians assigned
                 operations: [
                     {
@@ -209,7 +213,15 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         localStorage.setItem('documents', JSON.stringify(sampleDocuments));
     }
-    
+    // Ensure existing sample documents have a supervisor for demo
+    else {
+        let updated = false;
+        documents.forEach(d => {
+            if (!d.supervisor) { d.supervisor = 'sarah_supervisor'; updated = true; }
+        });
+        if (updated) localStorage.setItem('documents', JSON.stringify(documents));
+    }
+
     // Create sample users if none exist
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     if (users.length === 0) {

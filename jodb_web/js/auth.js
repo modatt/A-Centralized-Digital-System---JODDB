@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const role = localStorage.getItem('role');
         if (role === 'technician') {
             window.location.href = 'technician.html';
+        } else if (role === 'supervisor') {
+            window.location.href = 'supervisor.html';
         } else {
             window.location.href = 'dashboard.html';
         }
@@ -46,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (role === 'technician') {
                 window.location.href = 'technician.html';
+            } else if (role === 'supervisor') {
+                window.location.href = 'supervisor.html';
             } else {
                 window.location.href = 'dashboard.html';
             }
