@@ -53,8 +53,43 @@
 		'Dirt on Tube- Air blow gun',
 		'Disassemble Assemblage I',
 		'Epoxy on Blue Wire',
-		'Epoxy on Blue Wire',
-		'ESD Line Test',
+			'ESD Line Test',
+			'Eyepiece Friction',
+			'Filing Doublet',
+			'Focus Dirt and reassembly',
+			'Focus Shaft and Hub',
+			'Focus Knob',
+			'Focus Movement',
+			'Focus Sub-Assembly Filling',
+			'Housing Cleaning',
+			'Install Cover Assy.',
+			'Label Printing',
+			'Nitrogen Leakage',
+			'Objective Lens Leakage',
+			'Objective Lens Reassemblage',
+			'Photoresistor Cover Installation',
+			'Photoresistor Plug Replacement',
+			'Power Card Installation',
+			'Power Card not Working',
+			'Quality tube check',
+			'Reassemblage II',
+			'Repaint and Device Cleaning',
+			'Reticle Assembly Only',
+			'Reticle Label',
+			'Reticle Label and cleaning Troubeshooting',
+			'Reticle Lens Cleaning',
+			'Reticle Soldering',
+			'Troubleshooting reticle (410)',
+			'RTV',
+			'Soldering Card Blue Wire',,
+			'Soldering Cover Assy.',
+			'Soldering Tube Housing',
+			'Stamp Traveller Forms',
+			'Threading',
+			'Tight Main Body- Focus',
+			'Wire Stripping',
+			'Clean Beam and Tube',
+			'Return to Assy 1'
       // 'Assembly', 'Soldering', 'Packaging', 'Handover Documentation'
     ];
     const TESTER_OPERATIONS = [
@@ -215,6 +250,9 @@
     const modalCancel = document.getElementById('cancel-ops-btn');
     const modalSave = document.getElementById('save-ops-btn');
     const modalBody = document.getElementById('op-modal-body');
+  const overallToggle = document.getElementById('use-overall-time');
+  const overallStartInput = document.getElementById('overall-start');
+  const overallEndInput = document.getElementById('overall-end');
 
     let currentDocId = null;
 
@@ -277,8 +315,29 @@
         }
       }
 
+      // Prefill overall time controls from lastTechUpdate
+      try {
+        const overallEnabled = doc?.lastTechUpdate?.useOverallTime === true;
+        if (overallToggle) overallToggle.checked = !!overallEnabled;
+        if (overallStartInput) overallStartInput.value = doc?.lastTechUpdate?.overallStart || '';
+        if (overallEndInput) overallEndInput.value = doc?.lastTechUpdate?.overallEnd || '';
+        updateRowTimeInputsDisabled();
+      } catch(_){}
+
       modal.style.display = 'block';
     }
+    function updateRowTimeInputsDisabled(){
+      const disabled = !!overallToggle?.checked;
+      const startInputs = modalBody.querySelectorAll('.tech-start-time');
+      const endInputs = modalBody.querySelectorAll('.tech-end-time');
+      startInputs.forEach(inp => inp.disabled = disabled);
+      endInputs.forEach(inp => inp.disabled = disabled);
+      const fields = document.getElementById('overall-time-fields');
+      if (fields) fields.style.display = disabled ? '' : 'none';
+    }
+
+    overallToggle?.addEventListener('change', updateRowTimeInputsDisabled);
+
 
     function renderOpRow(op, idx){
       if (typeof op === 'string') {
@@ -321,7 +380,7 @@
       `;
     }
 
-  function saveOps(){
+    function saveOps(){
       if (currentDocId == null) return;
       const docs = JSON.parse(localStorage.getItem('documents') || '[]');
       const idx = docs.findIndex(d => d.id === currentDocId);
@@ -358,8 +417,8 @@
         const minOutput = minOutputInput !== '' ? parseFloat(minOutputInput) || 0 : (typeof opOrig === 'object' ? (parseFloat(opOrig.minOutput) || 0) : 0);
         const minTime = minTimeInput !== '' ? parseFloat(minTimeInput) || 0 : (typeof opOrig === 'object' ? (parseFloat(opOrig.minTime) || 0) : 0);
         const actualOutput = parseFloat(row.querySelector('.tech-actual-output').value) || 0;
-        const startTime = row.querySelector('.tech-start-time').value || '';
-        const endTime = row.querySelector('.tech-end-time').value || '';
+        let startTime = row.querySelector('.tech-start-time').value || '';
+        let endTime = row.querySelector('.tech-end-time').value || '';
         // Compute actualTime in hours if start/end provided; otherwise keep existing numeric
         let actualTime = 0;
         if (startTime && endTime) {
@@ -390,12 +449,34 @@
         updatedOps.push(opData);
       });
 
+      // Apply overall start/end time to first and last tasks if enabled
+      const useOverall = !!overallToggle?.checked;
+      const overallStart = (overallStartInput?.value || '').trim();
+      const overallEnd = (overallEndInput?.value || '').trim();
+      if (useOverall && overallStart && overallEnd && updatedOps.length > 0) {
+        const today = (document.getElementById('tech-date')?.value || new Date().toISOString().slice(0,10));
+        const start = new Date(`${today}T${overallStart}`);
+        const end = new Date(`${today}T${overallEnd}`);
+        const ms = end - start;
+        const hours = (!isNaN(ms) && ms > 0) ? Math.round((ms / 36e5) * 100) / 100 : 0;
+        // Reset all per-op actualTime to 0 and assign total to last op
+        updatedOps.forEach(op => { op.actualTime = 0; op.startTime = op.startTime || ''; op.endTime = op.endTime || ''; });
+        updatedOps[0].startTime = overallStart;
+        updatedOps[updatedOps.length - 1].endTime = overallEnd;
+        updatedOps[updatedOps.length - 1].actualTime = hours;
+      }
+
       const oldDoc = { ...docs[idx] };
       docs[idx] = {
         ...docs[idx],
         operations: updatedOps,
         lastModified: new Date().toISOString(),
-        lastTechUpdate: header
+        lastTechUpdate: {
+          ...header,
+          useOverallTime: !!(useOverall && overallStart && overallEnd && updatedOps.length > 0),
+          overallStart: overallStart || '',
+          overallEnd: overallEnd || ''
+        }
       };
       localStorage.setItem('documents', JSON.stringify(docs));
 

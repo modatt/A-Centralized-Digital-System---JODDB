@@ -114,6 +114,27 @@
                     </div>
                 </div>
 
+                <!-- Optional overall time control -->
+                <div class="overall-time-control" style="margin: 10px 0;">
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="use-overall-time" />
+                        Use overall time range (start of first task to end of last task)
+                    </label>
+                    <div id="overall-time-fields" style="display:none; margin-top:8px;">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label>Overall Start</label>
+                                <input type="time" id="overall-start" />
+                            </div>
+                            <div class="form-col">
+                                <label>Overall End</label>
+                                <input type="time" id="overall-end" />
+                            </div>
+                        </div>
+                        <small>When enabled, the first task's start time will be set to Overall Start and the last task's end time to Overall End on save.</small>
+                    </div>
+                </div>
+
                 <!-- Operations table with required fields -->
                 <div class="table-wrapper">
                     <table class="operations-table">
