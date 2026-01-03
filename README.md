@@ -305,12 +305,3 @@ This application is compatible with all modern browsers:
 
 ---
 
-## 🙏 Acknowledgments
-
-- Development team for continuous improvement
-- All contributors who have helped shape this project
-- Users for valuable feedback and suggestions
-
----
-
-**Made with ❤️ for efficient task and event management**
